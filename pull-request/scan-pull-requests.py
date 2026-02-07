@@ -12,22 +12,18 @@ import sys
 import github
 
 
-def main():
+def scan_github(db: dict):
+    """
+    Given a db of knowns PRs, inspect open PRs, update commit
+    statuses, and update the db accordingly. Return a list of
+    outstanding PRs to process.
+    """
     GITHUB_USERNAME = os.environ['GITHUB_USERNAME']
     GITHUB_TOKEN_FILE = os.environ['GITHUB_TOKEN_FILE']
     GITHUB_REPO = os.environ['GITHUB_REPO']
-    PULL_REQUEST_DB = os.environ['PULL_REQUEST_DB']
 
     with open(GITHUB_TOKEN_FILE) as f:
         token = f.read().strip()
-
-    db = {}
-    try:
-        with open(PULL_REQUEST_DB, 'rb') as f:
-            db = pickle.load(f)
-    except (IOError, OSError) as e:
-        if e.errno != errno.ENOENT:
-            raise
 
     g = github.Github(GITHUB_USERNAME, token, per_page=250)
     r = g.get_repo(GITHUB_REPO)
@@ -99,9 +95,26 @@ def main():
                 state='pending',
                 description=desc)
 
+        print(f"{pr.number}: {db.get(pr.number, '(none)')} -> {pr.head.sha}", file=sys.stderr)
         print('{}: {} -> {}'.format(pr.number,
                 db.get(pr.number, '') or '(none)', pr.head.sha),
               file=sys.stderr)
+
+    return to_process
+
+
+def main():
+    PULL_REQUEST_DB = os.environ['PULL_REQUEST_DB']
+
+    db = {}
+    try:
+        with open(PULL_REQUEST_DB, 'rb') as f:
+            db = pickle.load(f)
+    except (IOError, OSError) as e:
+        if e.errno != errno.ENOENT:
+            raise
+
+    to_process = scan_github(db)
 
     with open(PULL_REQUEST_DB + '.tmp', 'wb') as f:
         pickle.dump(db, f)
