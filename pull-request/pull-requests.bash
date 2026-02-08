@@ -13,7 +13,7 @@ pull=${PULL_REQUEST_DIR}
 if [[ -s ${pull}/current-pr ]]; then
 	iid=$(<"${pull}"/current-pr)
 	cd -- "${sync}"
-	hash=$(git rev-parse "refs/pull/${prid}")
+	hash=$(git rev-parse "refs/pull/${iid}")
 	"${SCRIPT_DIR}"/pull-request/set-pull-request-status.py "${hash}" error \
 		"QA checks crashed. Please rebase and check profile changes for syntax errors."
 	sendmail "${CRONJOB_ADMIN_MAIL}" <<-EOF
