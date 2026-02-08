@@ -11,19 +11,35 @@ gentooci=${GENTOO_CI_GIT}
 pull=${PULL_REQUEST_DIR}
 
 if [[ -s ${pull}/current-pr ]]; then
-	iid=$(<"${pull}"/current-pr)
+	pr=$(<"${pull}"/current-pr)
+	forge="${pr%/*}"
+	prid="${pr#*/}"
 	cd -- "${sync}"
-	hash=$(git rev-parse "refs/pull/${iid}")
-	"${SCRIPT_DIR}"/pull-request/set-pull-request-status.py "${hash}" error \
+	hash=$(git rev-parse "refs/pull/${pr}")
+	case ${forge} in
+		github)
+			pr_repo="${PULL_REQUEST_REPO}"
+			status_script="set-pull-request-status.py"
+			;;
+		codeberg)
+			pr_repo="https://codeberg.org/${CODEBERG_REPO}"
+			status_script="set-codeberg-pull-request-status.py"
+			;;
+		*)
+			echo "unknown forge ${forge}"
+			exit 1
+			;;
+	esac
+	"${SCRIPT_DIR}"/pull-request/"${status_script}" "${hash}" error \
 		"QA checks crashed. Please rebase and check profile changes for syntax errors."
 	sendmail "${CRONJOB_ADMIN_MAIL}" <<-EOF
-		Subject: Pull request crash: ${iid}
+		Subject: Pull request crash: ${pr}
 		To: <${CRONJOB_ADMIN_MAIL}>
 		Content-Type: text/plain; charset=utf8
 
-		It seems that pull request check for ${iid} crashed [1].
+		It seems that pull request check for ${pr} crashed [1].
 
-		[1]:${PULL_REQUEST_REPO}/pull/${iid}
+		[1]:${pr_repo}/pull/${prid}
 	EOF
 	rm -f -- "${pull}"/current-pr
 fi
@@ -61,11 +77,24 @@ if [[ -n ${pr} ]]; then
 	echo "${pr}" > "${pull}"/current-pr
 
 	cd -- "${sync}"
+	if ! git remote | grep -q codeberg; then
+		git remote add codeberg ssh://git@codeberg.org/gentoo/gentoo
+	fi
 	ref=refs/pull/${pr}
 
 	case ${forge} in
-		github) remote="origin" ;;
-		*) echo "unknown forge ${forge}"; exit 1 ;;
+		github)
+			remote="origin"
+			report_script="report-pull-request.py"
+			;;
+		codeberg)
+			remote="codeberg"
+			report_script="report-codeberg-pull-request.py"
+			;;
+		*)
+			echo "unknown forge ${forge}"
+			exit 1
+			;;
 	esac
 	git fetch -f "${remote}" "refs/pull/${prid}/head:${ref}"
 
@@ -154,9 +183,16 @@ if [[ -n ${pr} ]]; then
 		fi
 	fi
 
-	"${SCRIPT_DIR}"/pull-request/report-pull-request.py "${prid}" "${pr_hash}" \
-		"${pull}"/gentoo-ci/borked.list .pre-merge.borked "${hash}"
-
+	case ${forge} in
+		github)
+			"${SCRIPT_DIR}"/pull-request/report-pull-request.py "${prid}" "${pr_hash}" \
+		       "${pull}"/gentoo-ci/borked.list .pre-merge.borked "${hash}"
+		;;
+		codeberg)
+			"${SCRIPT_DIR}"/pull-request/report-codeberg-pull-request.py "${prid}" "${pr_hash}" \
+		       "${pull}"/gentoo-ci/borked.list .pre-merge.borked "${hash}"
+		;;
+	esac
 	rm -f -- "${pull}"/current-pr
 
 	rm -rf -- "${pull}"/tmp "${pull}"/gentoo-ci

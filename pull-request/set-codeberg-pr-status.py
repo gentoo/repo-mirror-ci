@@ -14,8 +14,8 @@ def main(commit_hash, stat, desc):
     with open(CODEBERG_TOKEN_FILE) as f:
         token = f.read().strip()
 
-    c = CodebergAPI(owner, repo, token)
-    c.commit_set_status(commit_hash, stat, description=desc, context='gentoo-ci')
+    with CodebergAPI(owner, repo, token) as cb:
+        cb.commit_set_status(commit_hash, stat, description=desc, context='gentoo-ci')
 
 
 if __name__ == '__main__':
