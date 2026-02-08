@@ -56,7 +56,7 @@ mkdir -p -- "${pull}"
 prid=$( "${SCRIPT_DIR}"/pull-request/scan-pull-requests.py )
 
 if [[ -n ${prid} ]]; then
-	echo "${prid}" > current-pr
+	echo "${prid}" > "${pull}"/current-pr
 
 	cd -- "${sync}"
 	ref=refs/pull/${prid}
@@ -150,7 +150,7 @@ if [[ -n ${prid} ]]; then
 	"${SCRIPT_DIR}"/pull-request/report-pull-request.py "${prid}" "${pr_hash}" \
 		"${pull}"/gentoo-ci/borked.list .pre-merge.borked "${hash}"
 
-	rm -f -- current-pr
+	rm -f -- "{pull}"/current-pr
 
 	rm -rf -- "${pull}"/tmp "${pull}"/gentoo-ci
 fi
