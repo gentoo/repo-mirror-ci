@@ -17,20 +17,11 @@ if [[ -s ${pull}/current-pr ]]; then
 	cd -- "${sync}"
 	hash=$(git rev-parse "refs/pull/${pr}")
 	case ${forge} in
-		github)
-			pr_repo="${PULL_REQUEST_REPO}"
-			status_script="set-pull-request-status.py"
-			;;
-		codeberg)
-			pr_repo="https://codeberg.org/${CODEBERG_REPO}"
-			status_script="set-codeberg-pull-request-status.py"
-			;;
-		*)
-			echo "unknown forge ${forge}"
-			exit 1
-			;;
+		github) pr_repo="${PULL_REQUEST_REPO}";;
+		codeberg) pr_repo="https://codeberg.org/${CODEBERG_REPO}";;
+		*) echo "unknown forge ${forge}"; exit 1;;
 	esac
-	"${SCRIPT_DIR}"/pull-request/"${status_script}" "${hash}" error \
+	"${SCRIPT_DIR}"/pull-request/set-pull-request-status.py "${forge}" "${hash}" error \
 		"QA checks crashed. Please rebase and check profile changes for syntax errors."
 	sendmail "${CRONJOB_ADMIN_MAIL}" <<-EOF
 		Subject: Pull request crash: ${pr}
@@ -78,23 +69,14 @@ if [[ -n ${pr} ]]; then
 
 	cd -- "${sync}"
 	if ! git remote | grep -q codeberg; then
-		git remote add codeberg ssh://git@codeberg.org/gentoo/gentoo
+		git remote add codeberg "ssh://git@codeberg.org/${CODEBERG_REPO}"
 	fi
 	ref=refs/pull/${pr}
 
 	case ${forge} in
-		github)
-			remote="origin"
-			report_script="report-pull-request.py"
-			;;
-		codeberg)
-			remote="codeberg"
-			report_script="report-codeberg-pull-request.py"
-			;;
-		*)
-			echo "unknown forge ${forge}"
-			exit 1
-			;;
+		github) remote="origin";;
+		codeberg) remote="codeberg";;
+		*) echo "unknown forge ${forge}"; exit 1;;
 	esac
 	git fetch -f "${remote}" "refs/pull/${prid}/head:${ref}"
 
@@ -182,17 +164,9 @@ if [[ -n ${pr} ]]; then
 			echo ETOOMANY > .pre-merge.borked
 		fi
 	fi
+	"${SCRIPT_DIR}"/pull-request/report-pull-request.py "${forge}" "${prid}" "${pr_hash}" \
+		       "${pull}"/gentoo-ci/borked.list .pre-merge.borked "${hash}"
 
-	case ${forge} in
-		github)
-			"${SCRIPT_DIR}"/pull-request/report-pull-request.py "${prid}" "${pr_hash}" \
-		       "${pull}"/gentoo-ci/borked.list .pre-merge.borked "${hash}"
-		;;
-		codeberg)
-			"${SCRIPT_DIR}"/pull-request/report-codeberg-pull-request.py "${prid}" "${pr_hash}" \
-		       "${pull}"/gentoo-ci/borked.list .pre-merge.borked "${hash}"
-		;;
-	esac
 	rm -f -- "${pull}"/current-pr
 
 	rm -rf -- "${pull}"/tmp "${pull}"/gentoo-ci
