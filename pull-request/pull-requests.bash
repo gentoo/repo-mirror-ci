@@ -150,7 +150,7 @@ if [[ -n ${prid} ]]; then
 	"${SCRIPT_DIR}"/pull-request/report-pull-request.py "${prid}" "${pr_hash}" \
 		"${pull}"/gentoo-ci/borked.list .pre-merge.borked "${hash}"
 
-	rm -f -- "{pull}"/current-pr
+	rm -f -- "${pull}"/current-pr
 
 	rm -rf -- "${pull}"/tmp "${pull}"/gentoo-ci
 fi
