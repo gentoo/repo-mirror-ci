@@ -69,7 +69,7 @@ if [[ -n ${pr} ]]; then
 
 	cd -- "${sync}"
 	if ! git remote | grep -q codeberg; then
-		git remote add codeberg "ssh://git@codeberg.org/${CODEBERG_REPO}"
+		git remote add codeberg "https://codeberg.org/${CODEBERG_REPO}"
 	fi
 	ref=refs/pull/${pr}
 
