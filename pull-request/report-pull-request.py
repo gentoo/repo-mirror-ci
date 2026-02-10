@@ -64,7 +64,7 @@ def report_codeberg_pr(
                 for url in borked:
                     body += url
             if pre_borked:
-                body += f"\nThere are existing issues already. Please look into the report to make sure none of them affect the packages in question:\n{report_url}s\n"
+                body += f"\nThere are existing issues already. Please look into the report to make sure none of them affect the packages in question:\n{report_url}\n"
         elif had_broken:
             body += "\nAll QA issues have been fixed!\n"
         else:
