@@ -94,7 +94,9 @@ def scan_codeberg(db: dict):
                 desc = "QA checks pending. Currently {}. in queue.".format(i)
             cb.commit_set_status(sha, "pending", description=desc, context="gentoo-ci")
 
-            print(f"{pr_key}: {db.get(pr_key, '') or '(none)'} -> {sha}", file=sys.stderr)
+            print(
+                f"{pr_key}: {db.get(pr_key, '') or '(none)'} -> {sha}", file=sys.stderr
+            )
             queue.append(pr_key)
         return queue
 
@@ -181,15 +183,16 @@ def scan_github(db: dict, queue_len: int):
         pr_key = f"github/{pr.number}"
         db_key = pr.number if pr.number in db else pr_key
         commit = r.get_commit(pr.head.sha)
-        if i == 0:
+        if i + queue_len == 0:
             desc = "QA checks in progress..."
             db[db_key] = commit.sha
         else:
-            desc = f"QA checks pending. Currently {i+queue_len}. in queue."
+            desc = f"QA checks pending. Currently {i + queue_len}. in queue."
         commit.create_status(context="gentoo-ci", state="pending", description=desc)
 
         print(
-            f"{pr_key}: {db.get(db_key, '') or '(none)'} -> {pr.head.sha}", file=sys.stderr
+            f"{pr_key}: {db.get(db_key, '') or '(none)'} -> {pr.head.sha}",
+            file=sys.stderr,
         )
         queue.append(pr_key)
 
