@@ -9,6 +9,15 @@ import github
 from codebergapi import CodebergAPI
 
 
+HAD_BROKEN_SUBS = (
+    "New issues",
+    "Issues already there",
+    "Issues inherited from Gentoo",
+    "There are existing issues already",
+    "too many broken packages",
+)
+
+
 def report_codeberg_pr(
     prid, prhash, borked, pre_borked, too_many_borked, report_uri_prefix, commit_hash
 ):
@@ -26,27 +35,13 @@ def report_codeberg_pr(
         # note: technically we could have multiple leftover comments
         for co in cb.get_reviews(prid):
             if co["user"]["login"] == CODEBERG_USERNAME:
-                body = co["body"]
-                if "All QA issues have been fixed" in body:
-                    had_broken = False
-                elif "has found no issues" in body:
-                    had_broken = False
-                elif "No issues found" in body:
-                    had_broken = False
-                elif "New issues" in body:
-                    had_broken = True
-                elif "Issues already there" in body:
-                    had_broken = True
-                elif "Issues inherited from Gentoo" in body:
-                    had_broken = True
-                elif "There are existing issues already" in body:
-                    had_broken = True
-                elif "too many broken packages" in body:
-                    had_broken = True
-                else:
-                    # skip comments that don't look like CI results
+                # skip comments that don't look like CI results
+                if not co["body"].startswith("## Pull request CI report"):
                     continue
                 old_comments.append(co)
+                had_broken = had_broken or any(
+                    sub in co["body"] for sub in HAD_BROKEN_SUBS
+                )
 
         for co in old_comments:
             cb.delete_review(prid, co["id"])
@@ -123,26 +118,11 @@ def report_github_pr(
     # note: technically we could have multiple leftover comments
     for co in pr.get_issue_comments():
         if co.user.login == GITHUB_USERNAME:
-            if "All QA issues have been fixed" in co.body:
-                had_broken = False
-            elif "has found no issues" in co.body:
-                had_broken = False
-            elif "No issues found" in co.body:
-                had_broken = False
-            elif "New issues" in co.body:
-                had_broken = True
-            elif "Issues already there" in co.body:
-                had_broken = True
-            elif "Issues inherited from Gentoo" in co.body:
-                had_broken = True
-            elif "There are existing issues already" in co.body:
-                had_broken = True
-            elif "too many broken packages" in co.body:
-                had_broken = True
-            else:
-                # skip comments that don't look like CI results
+            # skip comments that don't look like CI results
+            if not co.body.startswith("## Pull request CI report"):
                 continue
             old_comments.append(co)
+            had_broken = had_broken or any(sub in co.body for sub in HAD_BROKEN_SUBS)
     for co in old_comments:
         co.delete()
 
