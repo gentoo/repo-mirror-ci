@@ -39,6 +39,10 @@ def report_codeberg_pr(
                     had_broken = True
                 elif "Issues inherited from Gentoo" in body:
                     had_broken = True
+                elif "There are existing issues already" in body:
+                    had_broken = True
+                elif "too many broken packages" in body:
+                    had_broken = True
                 else:
                     # skip comments that don't look like CI results
                     continue
@@ -130,6 +134,10 @@ def report_github_pr(
             elif "Issues already there" in co.body:
                 had_broken = True
             elif "Issues inherited from Gentoo" in co.body:
+                had_broken = True
+            elif "There are existing issues already" in co.body:
+                had_broken = True
+            elif "too many broken packages" in co.body:
                 had_broken = True
             else:
                 # skip comments that don't look like CI results
