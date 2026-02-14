@@ -89,21 +89,19 @@ class CodebergAPI:
     def files(self, pr_id: int) -> list[dict]:
         return self.session.get(f"{self.repos_baseurl}/pulls/{pr_id}/files").json()
 
-    def get_reviews(self, pr_id: int) -> list[dict]:
-        return self.session.get(f"{self.repos_baseurl}/pulls/{pr_id}/reviews").json()
+    def get_comments(self, pr_id: int) -> list[dict]:
+        return self._get_paginated(f"{self.repos_baseurl}/issues/{pr_id}/comments")
 
-    def create_review(self, pr_id: int, comment: str) -> None:
-        # Does not appear to be possible to simply post comments
-        # https://codeberg.org/api/swagger#/repository/repoCreatePullReview
+    def create_comment(self, pr_id: int, comment: str) -> None:
         self.session.post(
-            f"{self.repos_baseurl}/pulls/{pr_id}/reviews",
+            f"{self.repos_baseurl}/issues/{pr_id}/comments",
             json={
                 "body": comment,
             },
         )
 
-    def delete_review(self, pr_id: int, review_id: int) -> None:
-        self.session.delete(f"{self.repos_baseurl}/pulls/{pr_id}/reviews/{review_id}")
+    def delete_comment(self, comment_id: int) -> None:
+        self.session.delete(f"{self.repos_baseurl}/issues/comments/{comment_id}")
 
     def teams(self, org: str) -> Generator[None, dict, None]:
         # https://codeberg.org/api/swagger#/organization/orgListTeams

@@ -33,18 +33,18 @@ def report_codeberg_pr(
         had_broken = False
         old_comments = []
         # note: technically we could have multiple leftover comments
-        for co in cb.get_reviews(prid):
+        for co in cb.get_comments(prid):
             if co["user"]["login"] == CODEBERG_USERNAME:
                 # skip comments that don't look like CI results
                 if not co["body"].startswith("## Pull request CI report"):
                     continue
-                old_comments.append(co)
+                old_comments.append(co["id"])
                 had_broken = had_broken or any(
                     sub in co["body"] for sub in HAD_BROKEN_SUBS
                 )
 
-        for co in old_comments:
-            cb.delete_review(prid, co["id"])
+        for co_id in old_comments:
+            cb.delete_comment(co_id)
 
         report_url = report_uri_prefix + "/" + prhash + "/output.html"
         body = f"""## Pull request CI report
@@ -69,7 +69,7 @@ def report_codeberg_pr(
         else:
             body += "\nNo issues found\n"
 
-        cb.create_review(prid, body)
+        cb.create_comment(prid, body)
 
         if borked:
             cb.commit_set_status(
