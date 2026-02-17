@@ -15,13 +15,12 @@ if [[ -s ${pull}/current-pr ]]; then
 	forge="${pr%/*}"
 	prid="${pr#*/}"
 	cd -- "${sync}"
-	hash=$(git rev-parse "refs/pull/${pr}")
 	case ${forge} in
 		github) pr_repo="${PULL_REQUEST_REPO}";;
 		codeberg) pr_repo="https://codeberg.org/${CODEBERG_REPO}";;
 		*) echo "unknown forge ${forge}"; exit 1;;
 	esac
-	"${SCRIPT_DIR}"/pull-request/set-pull-request-status.py "${forge}" "${hash}" error \
+	"${SCRIPT_DIR}"/pull-request/set-pull-request-status.py "${pr}" \
 		"QA checks crashed. Please rebase and check profile changes for syntax errors."
 	sendmail "${CRONJOB_ADMIN_MAIL}" <<-EOF
 		Subject: Pull request crash: ${pr}
