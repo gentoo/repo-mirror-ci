@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
+import errno
 import os
 import os.path
 import sys
+import pickle
 
 import github
 from codebergapi import CodebergAPI
@@ -34,12 +36,26 @@ def set_github_pr_status(commit_hash, stat, desc):
     c.create_status(stat, description=desc, context="gentoo-ci")
 
 
-def main(forge, commit_hash, stat, desc):
+def commit_hash_from_db(pr_id):
+    try:
+        with open(os.environ["PULL_REQUEST_DB"], "rb") as f:
+            db = pickle.load(f)
+            return db.get(pr_id)
+    except (IOError, OSError) as e:
+        if e.errno != errno.ENOENT:
+            raise
+
+
+def main(pr_id, stat, desc):
+    forge = pr_id.split("/")[0]
+    commit_hash = commit_hash_from_db(pr_id)
+    if commit_hash is None:
+        return 0
     if forge == "github":
         set_github_pr_status(commit_hash, stat, desc)
     elif forge == "codeberg":
         set_codeberg_pr_status(commit_hash, stat, desc)
-
+    return 0
 
 if __name__ == "__main__":
     sys.exit(main(*sys.argv[1:]))
