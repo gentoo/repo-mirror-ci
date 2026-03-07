@@ -63,16 +63,16 @@ class CodebergAPI:
             f"{self.repos_baseurl}/pulls/{pr_id}", json=({"labels": labels})
         )
 
-    def labels(self) -> list[dict]:
-        return self.session.get(f"{self.repos_baseurl}/labels").json()
+    def labels(self) -> Generator[None, dict, None]:
+        return self._get_paginated(f"{self.repos_baseurl}/labels")
 
-    def commits(self, pr_id: int) -> list[dict]:
+    def commits(self, pr_id: int) -> Generator[None, dict, None]:
         # https://codeberg.org/api/swagger#/repository/repoGetPullRequestCommits
-        return self.session.get(f"{self.repos_baseurl}/pulls/{pr_id}/commits").json()
+        return self._get_paginated(f"{self.repos_baseurl}/pulls/{pr_id}/commits")
 
-    def commit_statuses(self, sha):
+    def commit_statuses(self, sha) -> Generator[None, dict, None]:
         # /repos/{owner}/{repo}/statuses/{sha}
-        return self.session.get(f"{self.repos_baseurl}/statuses/{sha}").json()
+        return self._get_paginated(f"{self.repos_baseurl}/statuses/{sha}")
 
     def commit_set_status(
         self, sha, state, description=None, target_url=None, context=None
@@ -86,10 +86,10 @@ class CodebergAPI:
         }
         self.session.post(f"{self.repos_baseurl}/statuses/{sha}", json=body)
 
-    def files(self, pr_id: int) -> list[dict]:
-        return self.session.get(f"{self.repos_baseurl}/pulls/{pr_id}/files").json()
+    def files(self, pr_id: int) -> Generator[None, dict, None]:
+        return self._get_paginated(f"{self.repos_baseurl}/pulls/{pr_id}/files")
 
-    def get_comments(self, pr_id: int) -> list[dict]:
+    def get_comments(self, pr_id: int) -> Generator[None, dict, None]:
         return self._get_paginated(f"{self.repos_baseurl}/issues/{pr_id}/comments")
 
     def create_comment(self, pr_id: int, comment: str) -> None:
