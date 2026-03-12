@@ -20,7 +20,7 @@ if [[ -s ${pull}/current-pr ]]; then
 		codeberg) pr_repo="https://codeberg.org/${CODEBERG_REPO}";;
 		*) echo "unknown forge ${forge}"; exit 1;;
 	esac
-	"${SCRIPT_DIR}"/pull-request/set-pull-request-status.py "${pr}" \
+	"${SCRIPT_DIR}"/pull-request/set-pull-request-status.py "${pr}" error \
 		"QA checks crashed. Please rebase and check profile changes for syntax errors."
 	sendmail "${CRONJOB_ADMIN_MAIL}" <<-EOF
 		Subject: Pull request crash: ${pr}
