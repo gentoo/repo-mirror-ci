@@ -16,8 +16,8 @@ if [[ -s ${pull}/current-pr ]]; then
 	prid="${pr#*/}"
 	cd -- "${sync}"
 	case ${forge} in
-		github) pr_repo="${PULL_REQUEST_REPO}";;
-		codeberg) pr_repo="https://codeberg.org/${CODEBERG_REPO}";;
+		github) prlink="${PULL_REQUEST_REPO}/pull/${prid}";;
+		codeberg) prlink="https://codeberg.org/${CODEBERG_REPO}/pulls/${prid}";;
 		*) echo "unknown forge ${forge}"; exit 1;;
 	esac
 	"${SCRIPT_DIR}"/pull-request/set-pull-request-status.py "${pr}" error \
@@ -29,7 +29,7 @@ if [[ -s ${pull}/current-pr ]]; then
 
 		It seems that pull request check for ${pr} crashed [1].
 
-		[1]:${pr_repo}/pull/${prid}
+		[1]:${prlink}
 	EOF
 	rm -f -- "${pull}"/current-pr
 fi
