@@ -79,6 +79,8 @@ if [[ -n ${pr} ]]; then
 	esac
 	git fetch -f "${remote}" "refs/pull/${prid}/head:${ref}"
 
+	# Here the "core" part begins: running pmaint and pkgcheck
+	# that does not require network access.
 	hash=$(git rev-parse "${ref}")
 
 	cd -- "${pull}"
@@ -120,11 +122,6 @@ if [[ -n ${pr} ]]; then
 	git add -- *.xml
 	git diff --cached --quiet --exit-code || git commit -a -m "PR ${pr} @ $(date -u --date="@${ts}" "+%Y-%m-%d %H:%M:%S UTC")"
 	pr_hash=$(git rev-parse --short HEAD)
-	git push -f origin "pull-${forge}-${prid}"
-
-	cd -- "${gentooci}"
-	git push -f origin "pull-${forge}-${prid}"
-	curl "https://qa-reports-cdn-origin.gentoo.org/cgi-bin/trigger-pull.cgi?gentoo-ci" || :
 
 	# if we have any breakages...
 	if [[ -s ${pull}/gentoo-ci/borked.list ]]; then
@@ -163,6 +160,16 @@ if [[ -n ${pr} ]]; then
 			echo ETOOMANY > .pre-merge.borked
 		fi
 	fi
+
+	# End of "core" part. Now we need network access again to push
+	# out scan results.
+	cd -- gentoo-ci
+	git push -f origin "pull-${forge}-${prid}"
+
+	cd -- "${gentooci}"
+	git push -f origin "pull-${forge}-${prid}"
+
+	curl "https://qa-reports-cdn-origin.gentoo.org/cgi-bin/trigger-pull.cgi?gentoo-ci" || :
 	"${SCRIPT_DIR}"/pull-request/report-pull-request.py "${forge}" "${prid}" "${pr_hash}" \
 		       "${pull}"/gentoo-ci/borked.list .pre-merge.borked "${hash}"
 
