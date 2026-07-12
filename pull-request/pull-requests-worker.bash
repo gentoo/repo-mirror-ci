@@ -17,7 +17,7 @@ for d in "${pull}"; do
 	mkdir -p -- "${d}"/etc/portage
 	if [[ ! -e ${d}/etc/portage/make.profile ]]; then
 		rm -f -- "${d}"/etc/portage/make.profile
-		cp -d -- /etc/portage/make.profile "${d}"/etc/portage
+		ln -sf -- /etc/portage/make.profile "${d}"/etc/portage
 	fi
 	if [[ ! -e ${d}/etc/portage/make.conf ]]; then
 		cp -- /etc/portage/make.conf "${d}"/etc/portage
