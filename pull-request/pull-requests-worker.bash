@@ -37,6 +37,7 @@ forge="${pr%/*}"
 prid="${pr#*/}"
 ref=refs/pull/${pr}
 
+cd
 rm -rf -- tmp gentoo-ci
 
 git clone -s --no-checkout "${mirror}" tmp
