@@ -87,6 +87,8 @@ for r in ${REPOS}; do
 	"${SCRIPT_DIR}"/repos/smart-merge.bash "${SYNC_DIR}/${name}" \
 		"${MIRROR_DIR}/${name}" master
 
+	# Calls bash hooks that may need network access
+	# e.g. gentoo needs glsa, news
 	"${SCRIPT_DIR}/repos/repo-postmerge/${name}" "${MIRROR_DIR}/${name}"
 
 	rsync -rlpt --delete \
