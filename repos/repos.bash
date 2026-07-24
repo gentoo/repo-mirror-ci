@@ -95,6 +95,8 @@ shift
 setpriv_args=(
 	--landlock-access fs
 
+	# TODO: Replace these wih two general reads with more granular
+	# rules. Will need to allow libdir and maybe /usr overall at least.
 	--landlock-rule path-beneath:read-dir:/
 	--landlock-rule path-beneath:read-file:/
 
