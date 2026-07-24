@@ -83,56 +83,60 @@ setfacl -d -R -m g:${USER}:rwx "${REPOS_DIR}" ||:
 # Wrapper around setpriv(1) for landlock. We want to limit what a compromised
 # pmaint regen process can do (as it sources untrusted ebuilds), including
 # not being able to tamper with other repositories being processed.
-cat <<-EOF > /tmp/pmaint-wrapper
-#!/bin/bash
-set -x
+create_setpriv_wrapper() {
+	cat <<-EOF > /tmp/pmaint-wrapper
+	#!/bin/bash
+	set -x
 
-portage_dir=\$1
-repo_dir=\$2
-shift
-shift
+	portage_dir=\$1
+	repo_dir=\$2
+	shift
+	shift
 
-setpriv_args=(
-	--landlock-access fs
+	setpriv_args=(
+		--landlock-access fs
 
-	# TODO: Replace these wih two general reads with more granular
-	# rules. Will need to allow libdir and maybe /usr overall at least.
-	--landlock-rule path-beneath:read-dir:/
-	--landlock-rule path-beneath:read-file:/
+		# TODO: Replace these wih two general reads with more granular
+		# rules. Will need to allow libdir and maybe /usr overall at least.
+		--landlock-rule path-beneath:read-dir:/
+		--landlock-rule path-beneath:read-file:/
 
-	--landlock-rule path-beneath:write-file:/dev/null
+		--landlock-rule path-beneath:write-file:/dev/null
 
-	--landlock-rule path-beneath:read-dir:/etc/sandbox.d
-	--landlock-rule path-beneath:read-dir:/usr/lib/python-exec
+		--landlock-rule path-beneath:read-dir:/etc/sandbox.d
+		--landlock-rule path-beneath:read-dir:/usr/lib/python-exec
 
-	--landlock-rule path-beneath:read-dir:\${portage_dir}
-	--landlock-rule path-beneath:read-file:\${portage_dir}
+		--landlock-rule path-beneath:read-dir:\${portage_dir}
+		--landlock-rule path-beneath:read-file:\${portage_dir}
 
-	--landlock-rule path-beneath:read-dir:\${repo_dir}
-	--landlock-rule path-beneath:read-file:\${repo_dir}
+		--landlock-rule path-beneath:read-dir:\${repo_dir}
+		--landlock-rule path-beneath:read-file:\${repo_dir}
 
-	# Only allow writing to the specific repo we're operating on
-	--landlock-rule path-beneath:write-file:\${repo_dir}/metadata
-	--landlock-rule path-beneath:write-file:\${repo_dir}/profiles
-	--landlock-rule path-beneath:make-dir:\${repo_dir}/metadata
-	--landlock-rule path-beneath:make-reg:\${repo_dir}
-	--landlock-rule path-beneath:remove-file:\${repo_dir}/metadata
-	--landlock-rule path-beneath:remove-file:\${repo_dir}/profiles
+		# Only allow writing to the specific repo we're operating on
+		--landlock-rule path-beneath:write-file:\${repo_dir}/metadata
+		--landlock-rule path-beneath:write-file:\${repo_dir}/profiles
+		--landlock-rule path-beneath:make-dir:\${repo_dir}/metadata
+		--landlock-rule path-beneath:make-reg:\${repo_dir}
+		--landlock-rule path-beneath:remove-file:\${repo_dir}/metadata
+		--landlock-rule path-beneath:remove-file:\${repo_dir}/profiles
 
-	--landlock-rule path-beneath:execute:/
-	--landlock-rule path-beneath:write-file:/tmp
-)
-
-for dir in /usr/lib/python3.?? ; do
-	setpriv_args+=(
-		--landlock-rule path-beneath:read-dir:\${dir}
-		--landlock-rule path-beneath:read-file:\${dir}
+		--landlock-rule path-beneath:execute:/
+		--landlock-rule path-beneath:write-file:/tmp
 	)
-done
 
-exec setpriv "\${setpriv_args[@]}" -- "\$@"
-EOF
-chmod +x /tmp/pmaint-wrapper
+	for dir in /usr/lib/python3.?? ; do
+		setpriv_args+=(
+			--landlock-rule path-beneath:read-dir:\${dir}
+			--landlock-rule path-beneath:read-file:\${dir}
+		)
+	done
+
+	exec setpriv "\${setpriv_args[@]}" -- "\$@"
+	EOF
+	chmod +x /tmp/pmaint-wrapper
+}
+
+create_setpriv_wrapper
 
 # prepare mirrors
 for r in ${REPOS}; do
