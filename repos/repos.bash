@@ -71,9 +71,8 @@ rsync --recursive --links --perms --times --delete \
 	"${SYNC_DIR}/." "${REPOS_DIR}"
 
 # regen caches
-# (ignore failures, if it's ::gentoo, pkgcheck should detect it)
 pmaint --config "${CONFIG_ROOT}/etc/portage" regen \
-	--use-local-desc --pkg-desc-index -t "$(nproc)" || :
+	--use-local-desc --pkg-desc-index -t "$(nproc)"
 
 # prepare mirrors
 for r in ${REPOS}; do
