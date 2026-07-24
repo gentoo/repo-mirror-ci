@@ -70,13 +70,23 @@ rsync --recursive --links --perms --times --delete \
 	'--exclude=*/metadata/timestamp.chk' \
 	"${SYNC_DIR}/." "${REPOS_DIR}"
 
-# regen caches
-pmaint --config "${CONFIG_ROOT}/etc/portage" regen \
-	--use-local-desc --pkg-desc-index -t "$(nproc)"
+# The worker (in repomirrorci group) has to be able to write new cache
+# entries.
+setfacl -m g:repomirrorci:rwx -R -d "${REPOS_DIR}"
 
 # prepare mirrors
 for r in ${REPOS}; do
 	name=${r%%:*}
+
+	# regen caches
+	#
+	# TODO: We don't want repositories to be able to contaminate each other,
+	# can we split this up?
+	sudo -u "${WORKER_USER}" \
+		bwrap --bind / / --dev /dev --proc /proc --unshare-all \
+		--uid $(id -u "${WORKER_USER}") --gid $(id -g "${WORKER_USER}") \
+		pmaint --config "${CONFIG_ROOT}/etc/portage" regen \
+		--use-local-desc --pkg-desc-index -t "$(nproc)" "${name}"
 
 	if [[ ! -e ${MIRROR_DIR}/${name} ]]; then
 		git clone "git@github.com:gentoo-mirror/${name}" \
