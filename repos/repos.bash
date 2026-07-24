@@ -80,17 +80,64 @@ setfacl -d -R -m u:${USER}:rwx "${REPOS_DIR}" ||:
 # entries.
 setfacl -d -R -m g:${USER}:rwx "${REPOS_DIR}" ||:
 
+#
+# wrapper around setpriv(1) for landlock
+#
+cat <<-EOF > /tmp/pmaint-wrapper
+#!/bin/bash
+set -x
+
+portage_dir=\$1
+repo_dir=\$2
+shift
+shift
+
+setpriv_args=(
+	--landlock-access fs
+
+	--landlock-rule path-beneath:read-dir:/
+	--landlock-rule path-beneath:read-file:/
+
+	--landlock-rule path-beneath:write-file:/dev/null
+
+	--landlock-rule path-beneath:read-dir:/etc/sandbox.d
+	--landlock-rule path-beneath:read-dir:/usr/lib/python-exec
+
+	--landlock-rule path-beneath:read-dir:\${portage_dir}
+	--landlock-rule path-beneath:read-file:\${portage_dir}
+
+	--landlock-rule path-beneath:read-dir:\${repo_dir}
+	--landlock-rule path-beneath:read-file:\${repo_dir}
+
+	# Only allow writing to the specific repo we're operating on
+	--landlock-rule path-beneath:write-file:\${repo_dir}/metadata
+	--landlock-rule path-beneath:write-file:\${repo_dir}/profiles
+	--landlock-rule path-beneath:make-dir:\${repo_dir}/metadata
+	--landlock-rule path-beneath:make-reg:\${repo_dir}
+	--landlock-rule path-beneath:remove-file:\${repo_dir}/metadata
+	--landlock-rule path-beneath:remove-file:\${repo_dir}/profiles
+
+	--landlock-rule path-beneath:execute:/
+	--landlock-rule path-beneath:write-file:/tmp
+)
+
+for dir in /usr/lib/python3.?? ; do
+	setpriv_args+=( --landlock-rule path-beneath:read-dir:\${dir} )
+done
+
+exec setpriv "\${setpriv_args[@]}" -- "\$@"
+EOF
+chmod +x /tmp/pmaint-wrapper
+
 # prepare mirrors
 for r in ${REPOS}; do
 	name=${r%%:*}
 
 	# regen caches
-	#
-	# TODO: We don't want repositories to be able to contaminate each other,
-	# can we split this up?
 	sudo -u "${WORKER_USER}" \
 		bwrap --bind / / --dev /dev --proc /proc --unshare-all \
 		--uid $(id -u "${WORKER_USER}") --gid $(id -g "${WORKER_USER}") \
+		/tmp/pmaint-wrapper "${CONFIG_ROOT}/etc/portage" "${REPOS_DIR}/${name}" \
 		pmaint --config "${CONFIG_ROOT}/etc/portage" regen \
 		--use-local-desc --pkg-desc-index -t "$(nproc)" "${name}"
 
