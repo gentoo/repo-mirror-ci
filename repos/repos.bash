@@ -62,7 +62,7 @@ for r in ${SIGNED_REPOS}; do
 done
 
 # rsync repos to main dir
-rsync -rlpt --delete \
+rsync --recursive --links --perms --times --delete \
 	'--exclude=.*/' \
 	'--exclude=*/metadata/md5-cache' \
 	'--exclude=*/profiles/use.local.desc' \
@@ -91,7 +91,7 @@ for r in ${REPOS}; do
 	# e.g. gentoo needs glsa, news
 	"${SCRIPT_DIR}/repos/repo-postmerge/${name}" "${MIRROR_DIR}/${name}"
 
-	rsync -rlpt --delete \
+	rsync --recursive --links --perms --times --delete \
 		'--exclude=.*/' \
 		'--exclude=metadata/timestamp.chk' \
 		'--exclude=metadata/dtd' \
