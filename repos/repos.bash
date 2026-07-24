@@ -134,6 +134,8 @@ for r in ${REPOS}; do
 	name=${r%%:*}
 
 	# regen caches
+	# TODO: We may need to allow read for all repo dirs because of
+	# repository masters?
 	sudo -u "${WORKER_USER}" \
 		bwrap --bind / / --dev /dev --proc /proc --unshare-all \
 		--uid $(id -u "${WORKER_USER}") --gid $(id -g "${WORKER_USER}") \
