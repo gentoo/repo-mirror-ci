@@ -62,7 +62,7 @@ for r in ${SIGNED_REPOS}; do
 done
 
 # rsync repos to main dir
-rsync --recursive --links --perms --times --delete \
+rsync --recursive --links --times --delete \
 	'--exclude=.*/' \
 	'--exclude=*/metadata/md5-cache' \
 	'--exclude=*/profiles/use.local.desc' \
@@ -70,9 +70,15 @@ rsync --recursive --links --perms --times --delete \
 	'--exclude=*/metadata/timestamp.chk' \
 	"${SYNC_DIR}/." "${REPOS_DIR}"
 
+# The setfacl commands may fail if ${WORKER_USER} already owns them but
+# that's fine for us.
+#
+# Make sure repormirorci itself always has permissions even if repomirrorci-worker
+# is the owner.
+setfacl -d -R -m u:${USER}:rwx "${REPOS_DIR}" ||:
 # The worker (in repomirrorci group) has to be able to write new cache
 # entries.
-setfacl -m g:repomirrorci:rwx -R -d "${REPOS_DIR}"
+setfacl -d -R -m g:${USER}:rwx "${REPOS_DIR}" ||:
 
 # prepare mirrors
 for r in ${REPOS}; do
@@ -102,7 +108,7 @@ for r in ${REPOS}; do
 
 	# Verification step to make sure smart-merge didn't go wrong
 	# TODO: Is this really needed anymore?
-	rsync --recursive --links --perms --times --delete \
+	rsync --recursive --links --times --delete \
 		'--exclude=.*/' \
 		'--exclude=metadata/timestamp.chk' \
 		'--exclude=metadata/dtd' \
