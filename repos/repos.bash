@@ -91,6 +91,8 @@ for r in ${REPOS}; do
 	# e.g. gentoo needs glsa, news
 	"${SCRIPT_DIR}/repos/repo-postmerge/${name}" "${MIRROR_DIR}/${name}"
 
+	# Verification step to make sure smart-merge didn't go wrong
+	# TODO: Is this really needed anymore?
 	rsync --recursive --links --perms --times --delete \
 		'--exclude=.*/' \
 		'--exclude=metadata/timestamp.chk' \
