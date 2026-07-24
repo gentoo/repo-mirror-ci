@@ -52,6 +52,7 @@ do
 done
 
 # sync all repos
+# TODO: Replace this with per-repo iteration + setpriv at least
 pmaint --config "${CONFIG_ROOT_SYNC}/etc/portage" sync
 
 # check signed repos
