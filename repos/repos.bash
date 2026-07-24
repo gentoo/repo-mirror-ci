@@ -96,8 +96,6 @@ create_setpriv_wrapper() {
 	setpriv_args=(
 		--landlock-access fs
 
-		--landlock-rule path-beneath:execute:/
-
 		--landlock-rule path-beneath:read-file:/dev/null
 		--landlock-rule path-beneath:write-file:/dev/null
 
