@@ -80,9 +80,9 @@ setfacl -d -R -m u:${USER}:rwx "${REPOS_DIR}" ||:
 # entries.
 setfacl -d -R -m g:${USER}:rwx "${REPOS_DIR}" ||:
 
-#
-# wrapper around setpriv(1) for landlock
-#
+# Wrapper around setpriv(1) for landlock. We want to limit what a compromised
+# pmaint regen process can do (as it sources untrusted ebuilds), including
+# not being able to tamper with other repositories being processed.
 cat <<-EOF > /tmp/pmaint-wrapper
 #!/bin/bash
 set -x
