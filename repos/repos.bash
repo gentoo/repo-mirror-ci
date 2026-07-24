@@ -112,8 +112,6 @@ create_setpriv_wrapper() {
 		--landlock-rule path-beneath:read-file:/etc/sandbox.d
 		--landlock-rule path-beneath:read-file:/etc/sandbox.conf
 
-		--landlock-rule path-beneath:read-dir:/usr/lib/python-exec
-
 		# Needed for make.profile symlink
 		--landlock-rule path-beneath:read-dir:/var/db/repos/gentoo
 		--landlock-rule path-beneath:read-file:/var/db/repos/gentoo
@@ -141,8 +139,21 @@ create_setpriv_wrapper() {
 			--landlock-rule path-beneath:read-file:\${file}
 		)
 	done
+	for file in /usr/bin/pmaint /usr/bin/python3.?? /usr/bin/python-exec2c /bin/bash ; do
+                setpriv_args+=(
+                        --landlock-rule path-beneath:read-file:\${file}
+                        --landlock-rule path-beneath:execute:\${file}
+                )
+	done
+	for dir in /usr/lib/python-exec /usr/lib64/python-exec ; do
+		setpriv_args+=(
+			--landlock-rule path-beneath:read-dir:\${dir}
+			--landlock-rule path-beneath:read-file:\${dir}
+			--landlock-rule path-beneath:execute:\${dir}
+		)
+	done
 	# Not just for Python itself but also the loader..
-	for dir in /bin /sbin /usr /lib /lib64 ; do
+	for dir in /usr/lib64 /lib64 ; do
 		setpriv_args+=(
 			--landlock-rule path-beneath:read-dir:\${dir}
 			--landlock-rule path-beneath:read-file:\${dir}
@@ -151,6 +162,13 @@ create_setpriv_wrapper() {
 	done
 	# site-packages
 	for dir in /usr/lib/python3.?? ; do
+		setpriv_args+=(
+			--landlock-rule path-beneath:read-dir:\${dir}
+			--landlock-rule path-beneath:read-file:\${dir}
+		)
+	done
+	# portage+pkgcore config
+	for dir in /usr/share/portage /usr/share/pkgcore ; do
 		setpriv_args+=(
 			--landlock-rule path-beneath:read-dir:\${dir}
 			--landlock-rule path-beneath:read-file:\${dir}
