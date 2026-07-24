@@ -124,7 +124,10 @@ setpriv_args=(
 )
 
 for dir in /usr/lib/python3.?? ; do
-	setpriv_args+=( --landlock-rule path-beneath:read-dir:\${dir} )
+	setpriv_args+=(
+		--landlock-rule path-beneath:read-dir:\${dir}
+		--landlock-rule path-beneath:read-file:\${dir}
+	)
 done
 
 exec setpriv "\${setpriv_args[@]}" -- "\$@"
