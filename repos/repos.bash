@@ -96,34 +96,61 @@ create_setpriv_wrapper() {
 	setpriv_args=(
 		--landlock-access fs
 
-		# TODO: Replace these wih two general reads with more granular
-		# rules. Will need to allow libdir and maybe /usr overall at least.
-		--landlock-rule path-beneath:read-dir:/
-		--landlock-rule path-beneath:read-file:/
+		--landlock-rule path-beneath:execute:/
 
+		--landlock-rule path-beneath:read-file:/dev/null
 		--landlock-rule path-beneath:write-file:/dev/null
 
+		--landlock-rule path-beneath:read-file:/dev/tty
+
+		--landlock-rule path-beneath:write-file:/tmp
+
+		# sandbox.log
+		--landlock-rule path-beneath:make-reg:/tmp
+		--landlock-rule path-beneath:remove-file:/tmp
+
 		--landlock-rule path-beneath:read-dir:/etc/sandbox.d
+		--landlock-rule path-beneath:read-file:/etc/sandbox.d
+		--landlock-rule path-beneath:read-file:/etc/sandbox.conf
+
 		--landlock-rule path-beneath:read-dir:/usr/lib/python-exec
+
+		# Needed for make.profile symlink
+		--landlock-rule path-beneath:read-dir:/var/db/repos/gentoo
+		--landlock-rule path-beneath:read-file:/var/db/repos/gentoo
 
 		--landlock-rule path-beneath:read-dir:\${portage_dir}
 		--landlock-rule path-beneath:read-file:\${portage_dir}
 
-		--landlock-rule path-beneath:read-dir:\${repo_dir}
-		--landlock-rule path-beneath:read-file:\${repo_dir}
+		# Any repository may need to read any other repository because
+		# of repo masters.
+		--landlock-rule path-beneath:read-dir:${REPOS_DIR}
+		--landlock-rule path-beneath:read-file:${REPOS_DIR}
 
-		# Only allow writing to the specific repo we're operating on
+		# Only allow writing to the specific repo we're operating on.
 		--landlock-rule path-beneath:write-file:\${repo_dir}/metadata
 		--landlock-rule path-beneath:write-file:\${repo_dir}/profiles
 		--landlock-rule path-beneath:make-dir:\${repo_dir}/metadata
 		--landlock-rule path-beneath:make-reg:\${repo_dir}
 		--landlock-rule path-beneath:remove-file:\${repo_dir}/metadata
 		--landlock-rule path-beneath:remove-file:\${repo_dir}/profiles
-
-		--landlock-rule path-beneath:execute:/
-		--landlock-rule path-beneath:write-file:/tmp
 	)
 
+	# Needed for Python to be able to find libb2 for hashlib.
+	for file in /etc/ld.so.cache ; do
+		setpriv_args+=(
+			--landlock-rule path-beneath:read-file:\${file}
+		)
+	done
+	# Not just for Python itself but also the loader..
+	for dir in /bin /sbin /usr /lib /lib64 ; do
+		setpriv_args+=(
+			--landlock-rule path-beneath:read-dir:\${dir}
+			--landlock-rule path-beneath:read-file:\${dir}
+			--landlock-rule path-beneath:execute:\${dir}
+		)
+	done
+	# site-packages
 	for dir in /usr/lib/python3.?? ; do
 		setpriv_args+=(
 			--landlock-rule path-beneath:read-dir:\${dir}
@@ -143,8 +170,6 @@ for r in ${REPOS}; do
 	name=${r%%:*}
 
 	# regen caches
-	# TODO: We may need to allow read for all repo dirs because of
-	# repository masters?
 	sudo -u "${WORKER_USER}" \
 		bwrap --bind / / --dev /dev --proc /proc --unshare-all \
 		--uid $(id -u "${WORKER_USER}") --gid $(id -g "${WORKER_USER}") \
