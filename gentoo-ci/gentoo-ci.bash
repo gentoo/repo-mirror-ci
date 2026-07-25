@@ -186,7 +186,7 @@ if [[ ${PREV_COMMIT} != ${CURRENT_COMMIT} ]]; then
 		--reporter XmlReporter ${PKGCHECK_OPTIONS} > output.xml.tmp
 	popd >/dev/null
 	# Sort XML for better Git delta compression
-	cat "${MIRROR_DIR}"/output.xml.tmp | xsltproc "${SCRIPT_DIR}"/sort-output.xsl - > output.xml
+	cat "${MIRROR_DIR}"/gentoo/output.xml.tmp | xsltproc "${SCRIPT_DIR}"/sort-output.xsl - > output.xml
 	rm "${MIRROR_DIR}"/gentoo/output.xml.tmp
 
 	"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py \
