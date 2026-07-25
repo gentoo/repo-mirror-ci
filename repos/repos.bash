@@ -100,7 +100,21 @@ create_setpriv_wrapper() {
 		--landlock-rule path-beneath:read-file:/dev/null
 		--landlock-rule path-beneath:write-file:/dev/null
 
+		# Try to let pmaint emit errors when run under cron
+		--landlock-rule path-beneath:read-file:/dev/stdout
+		--landlock-rule path-beneath:read-file:/dev/stderr
+		--landlock-rule path-beneath:write-file:/dev/stdout
+		--landlock-rule path-beneath:write-file:/dev/stderr
+		--landlock-rule path-beneath:ioctl-dev:/dev/stdout
+		--landlock-rule path-beneath:ioctl-dev:/dev/stderr
+		--landlock-rule path-beneath:ioctl-dev:/dev/tty
+		--landlock-rule path-beneath:read-file:/dev/pts
+		--landlock-rule path-beneath:read-dir:/dev/pts
+		--landlock-rule path-beneath:write-file:/dev/pts
+		--landlock-rule path-beneath:ioctl-dev:/dev/pts
+
 		--landlock-rule path-beneath:read-file:/dev/tty
+		--landlock-rule path-beneath:write-file:/dev/tty
 
 		--landlock-rule path-beneath:write-file:/tmp
 
@@ -111,6 +125,7 @@ create_setpriv_wrapper() {
 		--landlock-rule path-beneath:read-dir:/etc/sandbox.d
 		--landlock-rule path-beneath:read-file:/etc/sandbox.d
 		--landlock-rule path-beneath:read-file:/etc/sandbox.conf
+		--landlock-rule path-beneath:read-file:/usr/share/sandbox/sandbox.bashrc
 
 		# Needed for make.profile symlink
 		--landlock-rule path-beneath:read-dir:/var/db/repos/gentoo
@@ -133,13 +148,16 @@ create_setpriv_wrapper() {
 		--landlock-rule path-beneath:remove-file:\${repo_dir}/profiles
 	)
 
-	# Needed for Python to be able to find libb2 for hashlib.
+	# Needed for Python to be able to find libb2 for hashlib
 	for file in /etc/ld.so.cache ; do
 		setpriv_args+=(
 			--landlock-rule path-beneath:read-file:\${file}
 		)
 	done
-	for file in /usr/bin/pmaint /usr/bin/python3.?? /usr/bin/python-exec2c /bin/bash ; do
+	# Needed to call pmaint or called by pmaint
+	for file in /usr/bin/pmaint /usr/bin/python3.?? /usr/bin/python-exec2c /bin/bash \
+			/usr/bin/sandbox /bin/stty /usr/bin/env \
+			/usr/bin/readlink /usr/bin/sort ; do
 		setpriv_args+=(
 			--landlock-rule path-beneath:read-file:\${file}
 			--landlock-rule path-beneath:execute:\${file}
@@ -153,7 +171,7 @@ create_setpriv_wrapper() {
 		)
 	done
 	# Not just for Python itself but also the loader..
-	for dir in /usr/lib64 /lib64 ; do
+	for dir in /usr/lib64 /lib64 /usr/lib/pkgcore ; do
 		setpriv_args+=(
 			--landlock-rule path-beneath:read-dir:\${dir}
 			--landlock-rule path-beneath:read-file:\${dir}
@@ -161,7 +179,7 @@ create_setpriv_wrapper() {
 		)
 	done
 	# site-packages
-	for dir in /usr/lib/python3.?? ; do
+	for dir in /usr/lib/python3.?? /etc/python-exec ; do
 		setpriv_args+=(
 			--landlock-rule path-beneath:read-dir:\${dir}
 			--landlock-rule path-beneath:read-file:\${dir}
