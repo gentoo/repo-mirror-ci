@@ -337,7 +337,7 @@ git checkout -b "pull-${forge}-${prid}"
 
 pushd -- "${pull}"/tmp >/dev/null
 HOME=${pull}/gentoo-ci time timeout -k 30s "${CI_TIMEOUT}" "${WORKER_DIR}"/pkgcheck-wrapper \
-	"${CONFIG_DIR}" "${pull}"/tmp "${pull}"/tmp \
+	"${CONFIG_DIR}" "${pull}" "${pull}"/tmp \
 	pkgcheck --config "${CONFIG_DIR}" scan \
 	--reporter XmlReporter ${PKGCHECK_PR_OPTIONS} > output.xml.tmp
 popd >/dev/null
