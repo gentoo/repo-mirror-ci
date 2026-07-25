@@ -67,12 +67,16 @@ cd ..
 git clone -s "${gentooci}" gentoo-ci
 cd -- gentoo-ci
 git checkout -b "pull-${forge}-${prid}"
-( cd -- "${pull}"/tmp &&
-	time HOME=${pull}/gentoo-ci \
-	timeout -k 30s "${CI_TIMEOUT}" pkgcheck --config "${CONFIG_DIR}" \
-		scan --reporter XmlReporter ${PKGCHECK_PR_OPTIONS}
-) | xsltproc "${SCRIPT_DIR}"/sort-output.xsl - > output.xml
-# ^^ Sort XML for better Git delta compression
+
+pushd -- "${pull}"/tmp >/dev/null
+HOME=${pull}/gentoo-ci time timeout -k 30s "${CI_TIMEOUT}" \
+	pkgcheck --config "${CONFIG_DIR}" scan \
+	--reporter XmlReporter ${PKGCHECK_PR_OPTIONS} > output.xml.tmp
+popd >/dev/null
+# Sort XML for better Git delta compression
+cat "${pull}"/tmp/output.xml.tmp | xsltproc "${SCRIPT_DIR}"/sort-output.xsl - > output.xml
+rm "${pull}"/tmp/output.xml.tmp
+
 ts=$(cd -- "${pull}"/tmp; git log --pretty='%ct' -1)
 "${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py \
 	-x "${PKGCHECK_RESULT_PARSER_GIT}"/excludes.json \
