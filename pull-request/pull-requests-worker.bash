@@ -146,6 +146,7 @@ create_pmaint_setpriv_wrapper() {
 			--landlock-rule path-beneath:read-file:\${dir}
 		)
 	done
+	exec setpriv "\${setpriv_args[@]}" -- "\$@"
 	EOF
 
 	chmod +x "${WORKER_DIR}"/pmaint-wrapper
