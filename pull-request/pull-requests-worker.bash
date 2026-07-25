@@ -323,7 +323,7 @@ git merge --quiet -m "Merge PR ${pr}" "${ref}"
 CONFIG_DIR=${pull}/etc/portage
 
 if ! time timeout -k 30s "${PMAINT_TIMEOUT}" "${WORKER_DIR}"/pmaint-wrapper \
-	"${CONFIG_ROOT}" "${REPOS_DIR}" "${REPOS_DIR}"/gentoo \
+	"${CONFIG_DIR}" "${REPOS_DIR}" "${REPOS_DIR}"/gentoo \
 	pmaint --config "${CONFIG_DIR}" regen --use-local-desc --pkg-desc-index -t "$(nproc)" gentoo ; then
 	ret=$?
 	echo ETOOMANY > .pre-merge.borked
