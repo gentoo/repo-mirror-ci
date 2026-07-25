@@ -37,7 +37,7 @@ done
 # pmaint regen process can do (as it sources untrusted ebuilds), including
 # not being able to tamper with other repositories being processed.
 create_pmaint_setpriv_wrapper() {
-	cat <<-EOF > /var/lib/repo-mirror-ci/pmaint-wrapper
+	cat <<-EOF > "${WORKER_DIR}"/pmaint-wrapper
 	#!/bin/bash
 	set -x
 
@@ -148,7 +148,7 @@ create_pmaint_setpriv_wrapper() {
 	done
 	EOF
 
-	chmod +x /var/lib/repo-mirror-ci/pmaint-wrapper
+	chmod +x "${WORKER_DIR}"/pmaint-wrapper
 }
 
 create_pmaint_setpriv_wrapper
@@ -177,7 +177,7 @@ git merge --quiet -m "Merge PR ${pr}" "${ref}"
 # update cache
 CONFIG_DIR=${pull}/etc/portage
 
-if ! time timeout -k 30s "${PMAINT_TIMEOUT}" /var/lib/repo-mirror-ci/pmaint-wrapper \
+if ! time timeout -k 30s "${PMAINT_TIMEOUT}" "${WORKER_DIR}"/pmaint-wrapper \
 	"${CONFIG_ROOT}" "${REPOS_DIR}" "${REPOS_DIR}"/gentoo \
 	pmaint --config "${CONFIG_DIR}" regen --use-local-desc --pkg-desc-index -t "$(nproc)" gentoo ; then
 	ret=$?
