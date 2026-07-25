@@ -85,7 +85,7 @@ setfacl -d -R -m g:${USER}:rwx "${REPOS_DIR}" ||:
 # pmaint regen process can do (as it sources untrusted ebuilds), including
 # not being able to tamper with other repositories being processed.
 create_setpriv_wrapper() {
-	cat <<-EOF > /tmp/pmaint-wrapper
+	cat <<-EOF > /var/lib/repo-mirror-ci/pmaint-wrapper
 	#!/bin/bash
 	set -x
 
@@ -177,7 +177,7 @@ create_setpriv_wrapper() {
 
 	exec setpriv "\${setpriv_args[@]}" -- "\$@"
 	EOF
-	chmod +x /tmp/pmaint-wrapper
+	chmod +x /var/lib/repo-mirror-ci/pmaint-wrapper
 }
 
 create_setpriv_wrapper
@@ -190,7 +190,7 @@ for r in ${REPOS}; do
 	sudo -u "${WORKER_USER}" \
 		bwrap --bind / / --dev /dev --proc /proc --unshare-all \
 		--uid $(id -u "${WORKER_USER}") --gid $(id -g "${WORKER_USER}") \
-		/tmp/pmaint-wrapper "${CONFIG_ROOT}/etc/portage" "${REPOS_DIR}/${name}" \
+		/var/lib/repo-mirror-ci/pmaint-wrapper "${CONFIG_ROOT}/etc/portage" "${REPOS_DIR}/${name}" \
 		pmaint --config "${CONFIG_ROOT}/etc/portage" regen \
 		--use-local-desc --pkg-desc-index -t "$(nproc)" "${name}"
 
