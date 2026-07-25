@@ -224,6 +224,7 @@ create_pkgcheck_setpriv_wrapper() {
 		--landlock-rule path-beneath:read-dir:${WORKER_DIR}/.cache/pkgcheck
 		--landlock-rule path-beneath:read-file:${WORKER_DIR}/.cache/pkgcheck
 		--landlock-rule path-beneath:write-file:${WORKER_DIR}/.cache/pkgcheck
+		--landlock-rule path-beneath:make-reg:${WORKER_DIR}/.cache/pkgcheck
 		--landlock-rule path-beneath:remove-dir:${WORKER_DIR}/.cache/pkgcheck
 		--landlock-rule path-beneath:remove-file:${WORKER_DIR}/.cache/pkgcheck
 		--landlock-rule path-beneath:truncate:${WORKER_DIR}/.cache/pkgcheck
