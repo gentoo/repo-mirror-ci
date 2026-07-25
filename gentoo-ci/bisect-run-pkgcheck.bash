@@ -32,8 +32,11 @@ git checkout -q "${current_commit}"
 # re-checking the same commits in next bisect
 # however, we only return result for the first one
 
-# TODO: run as sep user + setpriv
-pkgcheck --config "${CONFIG_DIR}" scan --reporter XmlReporter "${@}" \
+# TODO: setpriv
+sudo -u "${WORKER_USER}" \
+	bwrap --bind / / --dev /dev --proc /proc --unshare-all \
+	--uid $(id -u "${WORKER_USER}") --gid $(id -g "${WORKER_USER}") \
+	pkgcheck --config "${CONFIG_DIR}" scan --reporter XmlReporter "${@}" \
 	--glsa-dir "${MIRROR_DIR}"/gentoo/metadata/glsa \
 	${PKGCHECK_BISECT_OPTIONS} \
 	> "${BISECT_TMP}/.bisect.tmp.xml"
