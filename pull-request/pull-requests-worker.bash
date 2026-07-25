@@ -56,8 +56,12 @@ git merge --quiet -m "Merge PR ${pr}" "${ref}"
 
 # update cache
 CONFIG_DIR=${pull}/etc/portage
-time timeout -k 30s "${PMAINT_TIMEOUT}" pmaint --config "${CONFIG_DIR}" \
-	regen --use-local-desc --pkg-desc-index -t 16 gentoo || :
+if ! time timeout -k 30s "${PMAINT_TIMEOUT}" pmaint --config "${CONFIG_DIR}" \
+	regen --use-local-desc --pkg-desc-index -t 16 gentoo ; then
+	ret=$?
+	echo ETOOMANY > .pre-merge.borked
+	exit ${ret}
+fi
 
 cd ..
 git clone -s "${gentooci}" gentoo-ci
