@@ -173,7 +173,7 @@ if [[ ${PREV_COMMIT} != ${CURRENT_COMMIT} ]]; then
 
 	create_pkgcheck_setpriv_wrapper
 
-	cd -- "${MIRROR_DIR}"/gentoo
+	pushd -- "${MIRROR_DIR}"/gentoo >/dev/null
 	sudo -u "${WORKER_USER}" \
 		bwrap --bind / / --dev /dev --proc /proc --unshare-all \
 		--uid $(id -u "${WORKER_USER}") --gid $(id -g "${WORKER_USER}") \
@@ -184,8 +184,10 @@ if [[ ${PREV_COMMIT} != ${CURRENT_COMMIT} ]]; then
 		"${MIRROR_DIR}/${name}" \
 		pkgcheck --config "${CONFIG_DIR}" scan \
 		--reporter XmlReporter ${PKGCHECK_OPTIONS} > output.xml.tmp
+	popd >/dev/null
 	# Sort XML for better Git delta compression
-	cat output.xml.tmp | xsltproc "${SCRIPT_DIR}"/sort-output.xsl - > output.xml
+	cat "${MIRROR_DIR}"/output.xml.tmp | xsltproc "${SCRIPT_DIR}"/sort-output.xsl - > output.xml
+	rm "${MIRROR_DIR}"/gentoo/output.xml.tmp
 
 	"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py \
 		-x "${PKGCHECK_RESULT_PARSER_GIT}"/excludes.json \
