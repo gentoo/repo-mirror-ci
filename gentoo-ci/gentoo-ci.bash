@@ -26,11 +26,16 @@ if [[ ${PREV_COMMIT} != ${CURRENT_COMMIT} ]]; then
 	fi
 
 	export CONFIG_DIR=${CONFIG_ROOT_GENTOO_CI}/etc/portage
-	( cd -- "${MIRROR_DIR}"/gentoo &&
+
+	# TODO: setpriv
+	cd -- "${MIRROR_DIR}"/gentoo
+	sudo -u "${WORKER_USER}" \
+		bwrap --bind / / --dev /dev --proc /proc --unshare-all \
+		--uid $(id -u "${WORKER_USER}") --gid $(id -g "${WORKER_USER}") \
 		time timeout -k 30s "${CI_TIMEOUT}" pkgcheck --config "${CONFIG_DIR}" scan \
-			--reporter XmlReporter ${PKGCHECK_OPTIONS}
-	) | xsltproc "${SCRIPT_DIR}"/sort-output.xsl - > output.xml
-	# ^^ Sort XML for better Git delta compression
+		--reporter XmlReporter ${PKGCHECK_OPTIONS} > output.xml.tmp
+	# Sort XML for better Git delta compression
+	cat output.xml.tmp | xsltproc "${SCRIPT_DIR}"/sort-output.xsl - > output.xml
 
 	"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py \
 		-x "${PKGCHECK_RESULT_PARSER_GIT}"/excludes.json \
