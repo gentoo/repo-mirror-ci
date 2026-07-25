@@ -140,10 +140,10 @@ create_setpriv_wrapper() {
 		)
 	done
 	for file in /usr/bin/pmaint /usr/bin/python3.?? /usr/bin/python-exec2c /bin/bash ; do
-                setpriv_args+=(
-                        --landlock-rule path-beneath:read-file:\${file}
-                        --landlock-rule path-beneath:execute:\${file}
-                )
+		setpriv_args+=(
+			--landlock-rule path-beneath:read-file:\${file}
+			--landlock-rule path-beneath:execute:\${file}
+		)
 	done
 	for dir in /usr/lib/python-exec /usr/lib64/python-exec ; do
 		setpriv_args+=(
