@@ -60,7 +60,6 @@ if [[ -n ${pr} ]]; then
 	git fetch -f "${remote}" "refs/pull/${prid}/head:${ref}"
 	hash=$(git rev-parse "${ref}")
 
-	# TODO: setpriv
 	sudo -u "${WORKER_USER}" \
 		bwrap --bind / / --dev /dev --proc /proc --unshare-all \
 		"${SCRIPT_DIR}"/pull-request/pull-requests-worker.bash \
