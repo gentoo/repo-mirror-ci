@@ -146,7 +146,10 @@ create_pmaint_setpriv_wrapper() {
 			--landlock-rule path-beneath:read-file:\${dir}
 		)
 	done
-	exec setpriv "\${setpriv_args[@]}" -- "\$@"
+
+	# TODO: Re-enable when landlock support is available on this machine
+	"\$@"
+	#exec setpriv "\${setpriv_args[@]}" -- "\$@"
 	EOF
 
 	chmod +x "${WORKER_DIR}"/pmaint-wrapper
@@ -290,7 +293,10 @@ create_pkgcheck_setpriv_wrapper() {
 			--landlock-rule path-beneath:read-file:\${dir}
 		)
 	done
-	exec setpriv "\${setpriv_args[@]}" -- "\$@"
+
+	# TODO: Re-enable when landlock support is available on this machine
+	"\$@"
+	#exec setpriv "\${setpriv_args[@]}" -- "\$@"
 	EOF
 
 	chmod +x "${WORKER_DIR}"/pkgcheck-wrapper
