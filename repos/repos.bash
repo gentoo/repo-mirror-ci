@@ -8,83 +8,10 @@ export TZ=UTC
 
 date=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
 
-mkdir -p -- "${CONFIG_ROOT}" "${CONFIG_ROOT_MIRROR}" "${CONFIG_ROOT_SYNC}" \
-	"${SYNC_DIR}" "${MIRROR_DIR}" "${REPOS_DIR}"
-for d in "${CONFIG_ROOT}" "${CONFIG_ROOT_MIRROR}" "${CONFIG_ROOT_SYNC}"
-do
-	# populate with necessary files
-	mkdir -p -- "${d}"/etc/portage
-	if [[ ! -e ${d}/etc/portage/make.profile ]]; then
-		rm -f -- "${d}"/etc/portage/make.profile
-		ln -s -- "$(readlink -f /etc/portage/make.profile)" "${d}"/etc/portage/make.profile
-	fi
-	if [[ ! -e ${d}/etc/portage/make.conf ]]; then
-		cp -- /etc/portage/make.conf "${d}"/etc/portage
-	fi
-	if [[ ! -e ${d}/etc/portage/repos.conf ]]; then
-		case ${d} in
-			"${CONFIG_ROOT_SYNC}")
-				repo_root=${SYNC_DIR}
-				;;
-			"${CONFIG_ROOT}")
-				repo_root=${REPOS_DIR}
-				;;
-			"${CONFIG_ROOT_MIRROR}")
-				repo_root=${MIRROR_DIR}
-				;;
-			*)
-				exit 1
-		esac
-
-		for r in ${REPOS}; do
-			name=${r%%:*}
-			url=${r#*:}
-			cat >> "${d}/etc/portage/repos.conf" <<-EOF
-				[${name}]
-				location = ${repo_root}/${name}
-				clone-depth = 0
-				sync-type = git
-				sync-depth = 0
-				sync-uri = ${url}
-			EOF
-		done
-	fi
-done
-
-# sync all repos
-# TODO: Replace this with per-repo iteration + setpriv at least
-pmaint --config "${CONFIG_ROOT_SYNC}/etc/portage" sync
-
-# check signed repos
-for r in ${SIGNED_REPOS}; do
-	[[ $(
-		cd "${SYNC_DIR}/${r}" && git show -q --pretty="format:%G?" HEAD
-	) == [GU] ]]
-done
-
-# rsync repos to main dir
-rsync --recursive --links --times --delete \
-	'--exclude=.*/' \
-	'--exclude=*/metadata/md5-cache' \
-	'--exclude=*/profiles/use.local.desc' \
-	'--exclude=*/metadata/pkg_desc_index' \
-	'--exclude=*/metadata/timestamp.chk' \
-	"${SYNC_DIR}/." "${REPOS_DIR}"
-
-# The setfacl commands may fail if ${WORKER_USER} already owns them but
-# that's fine for us.
-#
-# Make sure repormirorci itself always has permissions even if repomirrorci-worker
-# is the owner.
-setfacl -d -R -m u:${USER}:rwx "${REPOS_DIR}" ||:
-# The worker (in repomirrorci group) has to be able to write new cache
-# entries.
-setfacl -d -R -m g:${USER}:rwx "${REPOS_DIR}" ||:
-
 # Wrapper around setpriv(1) for landlock. We want to limit what a compromised
 # pmaint regen process can do (as it sources untrusted ebuilds), including
 # not being able to tamper with other repositories being processed.
-create_setpriv_wrapper() {
+create_pmaint_setpriv_wrapper() {
 	cat <<-EOF > /var/lib/repo-mirror-ci/pmaint-wrapper
 	#!/bin/bash
 	set -x
@@ -198,7 +125,84 @@ create_setpriv_wrapper() {
 	chmod +x /var/lib/repo-mirror-ci/pmaint-wrapper
 }
 
-create_setpriv_wrapper
+mkdir -p -- "${CONFIG_ROOT}" "${CONFIG_ROOT_MIRROR}" "${CONFIG_ROOT_SYNC}" \
+	"${SYNC_DIR}" "${MIRROR_DIR}" "${REPOS_DIR}"
+for d in "${CONFIG_ROOT}" "${CONFIG_ROOT_MIRROR}" "${CONFIG_ROOT_SYNC}"
+do
+	# populate with necessary files
+	mkdir -p -- "${d}"/etc/portage
+	if [[ ! -e ${d}/etc/portage/make.profile ]]; then
+		rm -f -- "${d}"/etc/portage/make.profile
+		ln -s -- "$(readlink -f /etc/portage/make.profile)" "${d}"/etc/portage/make.profile
+	fi
+	if [[ ! -e ${d}/etc/portage/make.conf ]]; then
+		cp -- /etc/portage/make.conf "${d}"/etc/portage
+	fi
+	if [[ ! -e ${d}/etc/portage/repos.conf ]]; then
+		case ${d} in
+			"${CONFIG_ROOT_SYNC}")
+				repo_root=${SYNC_DIR}
+				;;
+			"${CONFIG_ROOT}")
+				repo_root=${REPOS_DIR}
+				;;
+			"${CONFIG_ROOT_MIRROR}")
+				repo_root=${MIRROR_DIR}
+				;;
+			*)
+				exit 1
+		esac
+
+		for r in ${REPOS}; do
+			name=${r%%:*}
+			url=${r#*:}
+			cat >> "${d}/etc/portage/repos.conf" <<-EOF
+				[${name}]
+				location = ${repo_root}/${name}
+				clone-depth = 0
+				sync-type = git
+				sync-depth = 0
+				sync-uri = ${url}
+			EOF
+		done
+	fi
+done
+
+# sync all repos
+for r in ${REPOS}; do
+	name=${r%%:*}
+
+	# TODO: setpriv
+	pmaint --config "${CONFIG_ROOT_SYNC}/etc/portage" sync "${name}"
+done
+
+# check signed repos
+for r in ${SIGNED_REPOS}; do
+	[[ $(
+		cd "${SYNC_DIR}/${r}" && git show -q --pretty="format:%G?" HEAD
+	) == [GU] ]]
+done
+
+# rsync repos to main dir
+rsync --recursive --links --times --delete \
+	'--exclude=.*/' \
+	'--exclude=*/metadata/md5-cache' \
+	'--exclude=*/profiles/use.local.desc' \
+	'--exclude=*/metadata/pkg_desc_index' \
+	'--exclude=*/metadata/timestamp.chk' \
+	"${SYNC_DIR}/." "${REPOS_DIR}"
+
+# The setfacl commands may fail if ${WORKER_USER} already owns them but
+# that's fine for us.
+#
+# Make sure repormirorci itself always has permissions even if repomirrorci-worker
+# is the owner.
+setfacl -d -R -m u:${USER}:rwx "${REPOS_DIR}" ||:
+# The worker (in repomirrorci group) has to be able to write new cache
+# entries.
+setfacl -d -R -m g:${USER}:rwx "${REPOS_DIR}" ||:
+
+create_pmaint_setpriv_wrapper
 
 # prepare mirrors
 for r in ${REPOS}; do
