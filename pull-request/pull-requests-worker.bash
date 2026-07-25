@@ -148,7 +148,7 @@ create_pmaint_setpriv_wrapper() {
 	done
 	EOF
 
-	chmod +x /var/lib/repo-mirror-ci/${filename}
+	chmod +x /var/lib/repo-mirror-ci/pmaint-wrapper
 }
 
 create_pmaint_setpriv_wrapper
