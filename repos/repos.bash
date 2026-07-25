@@ -132,7 +132,7 @@ create_base_setpriv_wrapper() {
 create_pmaint_sync_setpriv_wrapper() {
 	create_base_setpriv_wrapper pmaint-sync-wrapper
 
-	cat <<-EOF >> /var/lib/repo-mirror-ci/${filename}
+	cat <<-EOF >> /var/lib/repo-mirror-ci/pmaint-sync-wrapper
 	# Sync methods
 	for bin in /usr/bin/git /usr/libexec/git-core ; do
 		setpriv_args+=(
