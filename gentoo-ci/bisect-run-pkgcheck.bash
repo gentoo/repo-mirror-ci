@@ -32,10 +32,11 @@ git checkout -q "${current_commit}"
 # re-checking the same commits in next bisect
 # however, we only return result for the first one
 
-# TODO: setpriv
 sudo -u "${WORKER_USER}" \
 	bwrap --bind / / --dev /dev --proc /proc --unshare-all \
 	--uid $(id -u "${WORKER_USER}") --gid $(id -g "${WORKER_USER}") \
+	/var/lib/repo-mirror-ci/pkgcheck-wrapper "${CONFIG_ROOT_GENTOO_CI}/etc/portage" \
+	"${MIRROR_DIR}" "${MIRROR_DIR}"/gentoo \
 	pkgcheck --config "${CONFIG_DIR}" scan --reporter XmlReporter "${@}" \
 	--glsa-dir "${MIRROR_DIR}"/gentoo/metadata/glsa \
 	${PKGCHECK_BISECT_OPTIONS} \
