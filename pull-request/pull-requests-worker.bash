@@ -1,4 +1,5 @@
 #!/bin/bash
+# TODO: Comment that this file is run by..
 
 source "${0%/*}/../repo-mirror-ci.conf"
 
