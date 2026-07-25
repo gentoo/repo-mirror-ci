@@ -8,14 +8,11 @@ export TZ=UTC
 
 date=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
 
-# Wrapper around setpriv(1) for landlock. We want to limit what a compromised
-# pmaint sync process can do, including not being able to tamper with other
-# repositories being processed.
-#
-# TODO: deduplicate with create_pmaint_setpriv_wrapper, most of it is
-# shared.
-create_pmaint_sync_setpriv_wrapper() {
-	cat <<-EOF > /var/lib/repo-mirror-ci/pmaint-sync-wrapper
+# Create base part of setpriv wrapper which gets appended later.
+create_base_setpriv_wrapper() {
+	local filename=$1
+
+	cat <<-EOF > /var/lib/repo-mirror-ci/${filename}
 	#!/bin/bash
 	set -x
 
@@ -124,11 +121,18 @@ create_pmaint_sync_setpriv_wrapper() {
 			--landlock-rule path-beneath:read-file:\${dir}
 		)
 	done
+	EOF
 
-	#
-	# same as create_pmaint_setpriv_wrapper above except for wrapper name
-	#
+	chmod +x /var/lib/repo-mirror-ci/${filename}
+}
 
+# Wrapper around setpriv(1) for landlock. We want to limit what a compromised
+# pmaint sync process can do, including not being able to tamper with other
+# repositories being processed.
+create_pmaint_sync_setpriv_wrapper() {
+	create_base_setpriv_wrapper pmaint-sync-wrapper
+
+	cat <<-EOF >> /var/lib/repo-mirror-ci/${filename}
 	# Sync methods
 	for bin in /usr/bin/git /usr/libexec/git-core ; do
 		setpriv_args+=(
@@ -136,7 +140,9 @@ create_pmaint_sync_setpriv_wrapper() {
 			--landlock-rule path-beneath:execute:\${bin}
 		)
 	done
+
 	setpriv_args+=(
+		# Fetching
 		--landlock-rule path-beneath:read-file:/etc/resolv.conf
 		--landlock-rule path-beneath:read-file:/etc/nsswitch.conf
 		--landlock-rule path-beneath:read-file:/etc/ssl/certs/ca-certificates.crt
@@ -155,126 +161,13 @@ create_pmaint_sync_setpriv_wrapper() {
 
 	exec setpriv "\${setpriv_args[@]}" -- "\$@"
 	EOF
-	chmod +x /var/lib/repo-mirror-ci/pmaint-sync-wrapper
 }
 
 # Wrapper around setpriv(1) for landlock. We want to limit what a compromised
 # pmaint regen process can do (as it sources untrusted ebuilds), including
 # not being able to tamper with other repositories being processed.
 create_pmaint_setpriv_wrapper() {
-	cat <<-EOF > /var/lib/repo-mirror-ci/pmaint-wrapper
-	#!/bin/bash
-	set -x
-
-	portage_dir=\$1
-	repos_dir=\$2
-	repo_dir=\$3
-	shift
-	shift
-	shift
-
-	setpriv_args=(
-		--landlock-access fs
-
-		--landlock-rule path-beneath:read-file:/dev/null
-		--landlock-rule path-beneath:write-file:/dev/null
-
-		# Try to let pmaint emit errors when run under cron
-		--landlock-rule path-beneath:read-file:/dev/stdout
-		--landlock-rule path-beneath:read-file:/dev/stderr
-		--landlock-rule path-beneath:write-file:/dev/stdout
-		--landlock-rule path-beneath:write-file:/dev/stderr
-		--landlock-rule path-beneath:ioctl-dev:/dev/stdout
-		--landlock-rule path-beneath:ioctl-dev:/dev/stderr
-		--landlock-rule path-beneath:ioctl-dev:/dev/tty
-		--landlock-rule path-beneath:read-file:/dev/pts
-		--landlock-rule path-beneath:read-dir:/dev/pts
-		--landlock-rule path-beneath:write-file:/dev/pts
-		--landlock-rule path-beneath:ioctl-dev:/dev/pts
-
-		--landlock-rule path-beneath:read-file:/dev/tty
-		--landlock-rule path-beneath:write-file:/dev/tty
-
-		--landlock-rule path-beneath:write-file:/tmp
-
-		# sandbox.log
-		--landlock-rule path-beneath:make-reg:/tmp
-		--landlock-rule path-beneath:remove-file:/tmp
-
-		--landlock-rule path-beneath:read-dir:/etc/sandbox.d
-		--landlock-rule path-beneath:read-file:/etc/sandbox.d
-		--landlock-rule path-beneath:read-file:/etc/sandbox.conf
-		--landlock-rule path-beneath:read-file:/usr/share/sandbox/sandbox.bashrc
-
-		# Needed for make.profile symlink
-		--landlock-rule path-beneath:read-dir:/var/db/repos/gentoo
-		--landlock-rule path-beneath:read-file:/var/db/repos/gentoo
-
-		--landlock-rule path-beneath:read-dir:\${portage_dir}
-		--landlock-rule path-beneath:read-file:\${portage_dir}
-
-		# Any repository may need to read any other repository because
-		# of repo masters.
-		--landlock-rule path-beneath:read-dir:\${repos_dir}
-		--landlock-rule path-beneath:read-file:\${repos_dir}
-
-		# Only allow writing to the specific repo we're operating on.
-		--landlock-rule path-beneath:write-file:\${repo_dir}/metadata
-		--landlock-rule path-beneath:write-file:\${repo_dir}/profiles
-		--landlock-rule path-beneath:make-dir:\${repo_dir}/metadata
-		--landlock-rule path-beneath:make-reg:\${repo_dir}
-		--landlock-rule path-beneath:remove-file:\${repo_dir}/metadata
-		--landlock-rule path-beneath:remove-file:\${repo_dir}/profiles
-	)
-
-	# Needed for Python to be able to find libb2 for hashlib
-	for file in /etc/ld.so.cache ; do
-		setpriv_args+=(
-			--landlock-rule path-beneath:read-file:\${file}
-		)
-	done
-	# Needed to call pmaint or called by pmaint
-	for file in /usr/bin/pmaint /usr/bin/python3.?? /usr/bin/python-exec2c /bin/bash \
-			/usr/bin/sandbox /bin/stty /usr/bin/env \
-			/usr/bin/readlink /usr/bin/sort ; do
-		setpriv_args+=(
-			--landlock-rule path-beneath:read-file:\${file}
-			--landlock-rule path-beneath:execute:\${file}
-		)
-	done
-	for dir in /usr/lib/python-exec /usr/lib64/python-exec ; do
-		setpriv_args+=(
-			--landlock-rule path-beneath:read-dir:\${dir}
-			--landlock-rule path-beneath:read-file:\${dir}
-			--landlock-rule path-beneath:execute:\${dir}
-		)
-	done
-	# Not just for Python itself but also the loader..
-	for dir in /usr/lib64 /lib64 /usr/lib/pkgcore ; do
-		setpriv_args+=(
-			--landlock-rule path-beneath:read-dir:\${dir}
-			--landlock-rule path-beneath:read-file:\${dir}
-			--landlock-rule path-beneath:execute:\${dir}
-		)
-	done
-	# site-packages
-	for dir in /usr/lib/python3.?? /etc/python-exec ; do
-		setpriv_args+=(
-			--landlock-rule path-beneath:read-dir:\${dir}
-			--landlock-rule path-beneath:read-file:\${dir}
-		)
-	done
-	# portage+pkgcore config
-	for dir in /usr/share/portage /usr/share/pkgcore ; do
-		setpriv_args+=(
-			--landlock-rule path-beneath:read-dir:\${dir}
-			--landlock-rule path-beneath:read-file:\${dir}
-		)
-	done
-
-	exec setpriv "\${setpriv_args[@]}" -- "\$@"
-	EOF
-	chmod +x /var/lib/repo-mirror-ci/pmaint-wrapper
+	create_base_setpriv_wrapper pmaint-wrapper
 }
 
 mkdir -p -- "${CONFIG_ROOT}" "${CONFIG_ROOT_MIRROR}" "${CONFIG_ROOT_SYNC}" \
