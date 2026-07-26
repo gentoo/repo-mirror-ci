@@ -168,6 +168,9 @@ create_pmaint_sync_setpriv_wrapper() {
 # not being able to tamper with other repositories being processed.
 create_pmaint_setpriv_wrapper() {
 	create_base_setpriv_wrapper pmaint-wrapper
+	cat <<-EOF >> /var/lib/repo-mirror-ci/pmaint-wrapper
+	exec setpriv "\${setpriv_args[@]}" -- "\$@"
+	EOF
 }
 
 mkdir -p -- "${CONFIG_ROOT}" "${CONFIG_ROOT_MIRROR}" "${CONFIG_ROOT_SYNC}" \
