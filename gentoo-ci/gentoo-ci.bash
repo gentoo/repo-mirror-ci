@@ -182,7 +182,7 @@ if [[ ${PREV_COMMIT} != ${CURRENT_COMMIT} ]]; then
 		/var/lib/repo-mirror-ci/pkgcheck-wrapper \
 		"${CONFIG_ROOT_GENTOO_CI}/etc/portage" \
 		"${MIRROR_DIR}" \
-		"${MIRROR_DIR}/${name}" \
+		"${MIRROR_DIR}/gentoo" \
 		pkgcheck --config "${CONFIG_DIR}" scan \
 		--reporter XmlReporter ${PKGCHECK_OPTIONS} > output.xml.tmp
 	popd >/dev/null
