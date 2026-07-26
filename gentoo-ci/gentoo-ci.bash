@@ -180,7 +180,7 @@ if [[ ${PREV_COMMIT} != ${CURRENT_COMMIT} ]]; then
 		--uid $(id -u "${WORKER_USER}") --gid $(id -g "${WORKER_USER}") \
 		time timeout -k 30s "${CI_TIMEOUT}" \
 		/var/lib/repo-mirror-ci/pkgcheck-wrapper \
-		"${CONFIG_ROOT_GENTOO_CI}/etc/portage" \
+		"${CONFIG_DIR}" \
 		"${MIRROR_DIR}" \
 		"${MIRROR_DIR}/gentoo" \
 		pkgcheck --config "${CONFIG_DIR}" scan \
