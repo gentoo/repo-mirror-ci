@@ -64,6 +64,13 @@ create_pkgcheck_setpriv_wrapper() {
 		--landlock-rule path-beneath:read-dir:\${repos_dir}
 		--landlock-rule path-beneath:read-file:\${repos_dir}
 
+		# TODO: This needs cleaning up
+		\${MIRROR_DIR:+--landlock-rule path-beneath:read-dir:\${MIRROR_DIR}}
+		\${MIRROR_DIR:+--landlock-rule path-beneath:read-file:\${MIRROR_DIR}}
+
+		\${SYNC_DIR:+--landlock-rule path-beneath:read-dir:\${SYNC_DIR}}
+		\${SYNC_DIR:+--landlock-rule path-beneath:read-file:\${SYNC_DIR}}
+
 		\${GLSA_DIR:+--landlock-rule path-beneath:read-dir:\${GLSA_DIR}}
 		\${GLSA_DIR:+--landlock-rule path-beneath:read-file:\${GLSA_DIR}}
 
