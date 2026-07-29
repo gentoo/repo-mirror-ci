@@ -109,7 +109,7 @@ cc_line=()
 if [[ ( ${new[@]} || ${wnew[@]} ) && ${previous_commit} && $(( ${#new[@]} + ${#wnew[@]} )) -lt 50 ]]; then
 	trap 'rm -rf "${BISECT_TMP}"' EXIT
 	export BISECT_TMP=$(mktemp -d)
-	cp "${SCRIPT_DIR}"/.gitconfig "${BISECT_TMP}"/.gitconfig
+	cp "${DATA_DIR}"/.gitconfig "${BISECT_TMP}"/.gitconfig
 	mkdir -p -- "${BISECT_TMP}"/.config/pkgcore
 	sed -e "s^@path@^${SYNC_DIR}/gentoo^" \
 		"${SCRIPT_DIR}"/gentoo-ci/pkgcore.conf.in \
