@@ -34,13 +34,13 @@ git checkout -q "${current_commit}"
 # re-checking the same commits in next bisect
 # however, we only return result for the first one
 
-sudo -u "${WORKER_USER}" \
+sudo -u "${WORKER_USER}" GLSA_DIR="${MIRROR_DIR}"/gentoo/metadata/glsa \
 	bwrap --bind / / --dev /dev --proc /proc --unshare-all \
 	--uid $(id -u "${WORKER_USER}") --gid $(id -g "${WORKER_USER}") \
 	${DATA_DIR}/pkgcheck-wrapper "${CONFIG_ROOT_GENTOO_CI}/etc/portage" \
 	"${dir}" "${dir}"/gentoo \
 	pkgcheck --config "${CONFIG_DIR}" scan --reporter XmlReporter "${@}" \
-	--glsa-dir "${dir}"/gentoo/metadata/glsa \
+	--glsa-dir "${MIRROR_DIR}"/gentoo/metadata/glsa \
 	${PKGCHECK_BISECT_OPTIONS} \
 	> "${BISECT_TMP}/.bisect.tmp.xml"
 

@@ -64,6 +64,9 @@ create_pkgcheck_setpriv_wrapper() {
 		--landlock-rule path-beneath:read-dir:\${repos_dir}
 		--landlock-rule path-beneath:read-file:\${repos_dir}
 
+		${GLSA_DIR:+--landlock-rule path-beneath:read-dir:\${GLSA_DIR}}
+		${GLSA_DIR:+--landlock-rule path-beneath:read-file:\${GLSA_DIR}}
+
 		# Python's multiprocessing module creates locks here
 		--landlock-rule path-beneath:read-dir:/dev/shm
 		--landlock-rule path-beneath:read-file:/dev/shm
