@@ -12,7 +12,7 @@ date=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
 create_base_setpriv_wrapper() {
 	local filename=$1
 
-	cat <<-EOF > /var/lib/repo-mirror-ci/${filename}
+	cat <<-EOF > ${DATA_DIR}/${filename}
 	#!/bin/bash
 	set -x
 
@@ -123,7 +123,7 @@ create_base_setpriv_wrapper() {
 	done
 	EOF
 
-	chmod +x /var/lib/repo-mirror-ci/${filename}
+	chmod +x ${DATA_DIR}/${filename}
 }
 
 # Wrapper around setpriv(1) for landlock. We want to limit what a compromised
@@ -132,7 +132,7 @@ create_base_setpriv_wrapper() {
 create_pmaint_sync_setpriv_wrapper() {
 	create_base_setpriv_wrapper pmaint-sync-wrapper
 
-	cat <<-EOF >> /var/lib/repo-mirror-ci/pmaint-sync-wrapper
+	cat <<-EOF >> ${DATA_DIR}/pmaint-sync-wrapper
 	# Sync methods
 	for bin in /usr/bin/git /usr/libexec/git-core ; do
 		setpriv_args+=(
@@ -168,7 +168,7 @@ create_pmaint_sync_setpriv_wrapper() {
 # not being able to tamper with other repositories being processed.
 create_pmaint_setpriv_wrapper() {
 	create_base_setpriv_wrapper pmaint-wrapper
-	cat <<-EOF >> /var/lib/repo-mirror-ci/pmaint-wrapper
+	cat <<-EOF >> ${DATA_DIR}/pmaint-wrapper
 	exec setpriv "\${setpriv_args[@]}" -- "\$@"
 	EOF
 }
@@ -223,7 +223,7 @@ create_pmaint_setpriv_wrapper
 for r in ${REPOS}; do
 	name=${r%%:*}
 
-	/var/lib/repo-mirror-ci/pmaint-sync-wrapper \
+	${DATA_DIR}/pmaint-sync-wrapper \
 		"${CONFIG_ROOT_SYNC}/etc/portage" \
 		"${SYNC_DIR}" \
 		"${SYNC_DIR}/${name}" \
@@ -264,7 +264,7 @@ for r in ${REPOS}; do
 	sudo -u "${WORKER_USER}" \
 		bwrap --bind / / --dev /dev --proc /proc --unshare-all \
 		--uid $(id -u "${WORKER_USER}") --gid $(id -g "${WORKER_USER}") \
-		/var/lib/repo-mirror-ci/pmaint-wrapper \
+		${DATA_DIR}/pmaint-wrapper \
 		"${CONFIG_ROOT}/etc/portage" "${REPOS_DIR}" "${REPOS_DIR}/${name}" \
 		pmaint --config "${CONFIG_ROOT}/etc/portage" regen \
 		--use-local-desc --pkg-desc-index -t "$(nproc)" "${name}"

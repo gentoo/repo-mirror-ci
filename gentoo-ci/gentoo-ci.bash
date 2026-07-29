@@ -8,7 +8,7 @@ export TZ=UTC
 # Wrapper around setpriv(1) for landlock. We want to limit what a compromised
 # pkgcheck process can do (as it sources untrusted ebuilds)
 create_pkgcheck_setpriv_wrapper() {
-	cat <<-EOF > /var/lib/repo-mirror-ci/pkgcheck-wrapper
+	cat <<-EOF > ${DATA_DIR}/pkgcheck-wrapper
 	#!/bin/bash
 	set -x
 
@@ -147,7 +147,7 @@ create_pkgcheck_setpriv_wrapper() {
 	exec setpriv "\${setpriv_args[@]}" -- "\$@"
 	EOF
 
-	chmod +x /var/lib/repo-mirror-ci/pkgcheck-wrapper
+	chmod +x ${DATA_DIR}/pkgcheck-wrapper
 }
 
 cd -- "${SYNC_DIR}"/gentoo
@@ -179,7 +179,7 @@ if [[ ${PREV_COMMIT} != ${CURRENT_COMMIT} ]]; then
 		bwrap --bind / / --dev /dev --proc /proc --unshare-all \
 		--uid $(id -u "${WORKER_USER}") --gid $(id -g "${WORKER_USER}") \
 		time timeout -k 30s "${CI_TIMEOUT}" \
-		/var/lib/repo-mirror-ci/pkgcheck-wrapper \
+		${DATA_DIR}/pkgcheck-wrapper \
 		"${CONFIG_DIR}" \
 		"${MIRROR_DIR}" \
 		"${MIRROR_DIR}/gentoo" \
