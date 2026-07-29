@@ -4,6 +4,8 @@ set -e -x
 
 trap 'exit 255' EXIT
 
+dir=${1}
+shift
 flag=${1}
 shift
 
@@ -36,9 +38,9 @@ sudo -u "${WORKER_USER}" \
 	bwrap --bind / / --dev /dev --proc /proc --unshare-all \
 	--uid $(id -u "${WORKER_USER}") --gid $(id -g "${WORKER_USER}") \
 	${DATA_DIR}/pkgcheck-wrapper "${CONFIG_ROOT_GENTOO_CI}/etc/portage" \
-	"${MIRROR_DIR}" "${MIRROR_DIR}"/gentoo \
+	"${dir}" "${dir}"/gentoo \
 	pkgcheck --config "${CONFIG_DIR}" scan --reporter XmlReporter "${@}" \
-	--glsa-dir "${MIRROR_DIR}"/gentoo/metadata/glsa \
+	--glsa-dir "${dir}"/gentoo/metadata/glsa \
 	${PKGCHECK_BISECT_OPTIONS} \
 	> "${BISECT_TMP}/.bisect.tmp.xml"
 
