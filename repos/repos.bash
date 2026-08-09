@@ -255,6 +255,9 @@ setfacl -d -R -m u:${USER}:rwx "${REPOS_DIR}" ||:
 # The worker (in repomirrorci group) has to be able to write new cache
 # entries.
 setfacl -d -R -m g:${USER}:rwx "${REPOS_DIR}" ||:
+# The worker needs to be able to write new cache entries, including
+# temporary files (.update.*) for pmaint regen --use-local-desc --pkg-desc-index.
+chmod 0770 "${REPOS_DIR}" ||:
 
 # prepare mirrors
 for r in ${REPOS}; do
