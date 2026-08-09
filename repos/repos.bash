@@ -257,7 +257,7 @@ setfacl -d -R -m u:${USER}:rwx "${REPOS_DIR}" ||:
 setfacl -d -R -m g:${USER}:rwx "${REPOS_DIR}" ||:
 # The worker needs to be able to write new cache entries, including
 # temporary files (.update.*) for pmaint regen --use-local-desc --pkg-desc-index.
-chmod 0770 "${REPOS_DIR}" ||:
+chmod 0770 "${REPOS_DIR}" "${REPOS_DIR}"/*/metadata "${REPOS_DIR}"/*/profiles ||:
 
 # prepare mirrors
 for r in ${REPOS}; do
