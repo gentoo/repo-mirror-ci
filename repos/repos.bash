@@ -157,6 +157,8 @@ create_pmaint_sync_setpriv_wrapper() {
 		--landlock-rule path-beneath:remove-file:\${repo_dir}
 		# git uses truncate for some files in .git
 		--landlock-rule path-beneath:truncate:\${repo_dir}
+		# a repo like ::kde may contain symlinks for sets/docs
+		--landlock-rule path-beneath:make-sym:\${repo_dir}
 	)
 
 	exec setpriv "\${setpriv_args[@]}" -- "\$@"
