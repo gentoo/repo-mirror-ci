@@ -90,8 +90,9 @@ create_pmaint_setpriv_wrapper() {
 
 		# Any repository may need to read any other repository because
 		# of repo masters.
-		--landlock-rule path-beneath:read-dir:\${repos_dir}
-		--landlock-rule path-beneath:read-file:\${repos_dir}
+		# These are needed too as the path may be different.
+		--landlock-rule path-beneath:read-dir:\${repo_dir}
+		--landlock-rule path-beneath:read-file:\${repo_dir}
 
 		# Only allow writing to the specific repo we're operating on.
 		--landlock-rule path-beneath:write-file:\${repo_dir}/metadata
@@ -147,9 +148,7 @@ create_pmaint_setpriv_wrapper() {
 		)
 	done
 
-	# TODO: Re-enable when landlock support is available on this machine
-	"\$@"
-	#exec setpriv "\${setpriv_args[@]}" -- "\$@"
+	exec setpriv "\${setpriv_args[@]}" -- "\$@"
 	EOF
 
 	chmod +x "${WORKER_DIR}"/pmaint-wrapper
@@ -221,14 +220,15 @@ create_pkgcheck_setpriv_wrapper() {
 		--landlock-rule path-beneath:make-reg:/dev/shm
 		--landlock-rule path-beneath:remove-file:/dev/shm
 
-		--landlock-rule path-beneath:read-dir:${WORKER_DIR}/.cache/pkgcheck
-		--landlock-rule path-beneath:read-file:${WORKER_DIR}/.cache/pkgcheck
-		--landlock-rule path-beneath:write-file:${WORKER_DIR}/.cache/pkgcheck
-		--landlock-rule path-beneath:make-reg:${WORKER_DIR}/.cache/pkgcheck
-		--landlock-rule path-beneath:remove-dir:${WORKER_DIR}/.cache/pkgcheck
-		--landlock-rule path-beneath:remove-file:${WORKER_DIR}/.cache/pkgcheck
-		--landlock-rule path-beneath:truncate:${WORKER_DIR}/.cache/pkgcheck
-		--landlock-rule path-beneath:make-dir:${WORKER_DIR}/.cache/pkgcheck
+		# pkgcheck needs to be able to create a cache directory here
+		--landlock-rule path-beneath:read-dir:${pull}/gentoo-ci
+		--landlock-rule path-beneath:read-file:${pull}/gentoo-ci
+		--landlock-rule path-beneath:write-file:${pull}/gentoo-ci
+		--landlock-rule path-beneath:make-reg:${pull}/gentoo-ci
+		--landlock-rule path-beneath:remove-dir:${pull}/gentoo-ci
+		--landlock-rule path-beneath:remove-file:${pull}/gentoo-ci
+		--landlock-rule path-beneath:truncate:${pull}/gentoo-ci
+		--landlock-rule path-beneath:make-dir:${pull}/gentoo-ci
 
 		# Used to compress cache
 		--landlock-rule path-beneath:execute:/usr/bin/zstd
@@ -295,9 +295,7 @@ create_pkgcheck_setpriv_wrapper() {
 		)
 	done
 
-	# TODO: Re-enable when landlock support is available on this machine
-	"\$@"
-	#exec setpriv "\${setpriv_args[@]}" -- "\$@"
+	exec setpriv "\${setpriv_args[@]}" -- "\$@"
 	EOF
 
 	chmod +x "${WORKER_DIR}"/pkgcheck-wrapper
@@ -331,7 +329,7 @@ git merge --quiet -m "Merge PR ${pr}" "${ref}"
 CONFIG_DIR=${pull}/etc/portage
 
 if ! time timeout -k 30s "${PMAINT_TIMEOUT}" "${WORKER_DIR}"/pmaint-wrapper \
-	"${CONFIG_DIR}" "${REPOS_DIR}" "${REPOS_DIR}"/gentoo \
+	"${CONFIG_DIR}" "${REPOS_DIR}" "${pull}"/tmp \
 	pmaint --config "${CONFIG_DIR}" regen --use-local-desc --pkg-desc-index -t "$(nproc)" gentoo ; then
 	ret=$?
 	echo ETOOMANY > .pre-merge.borked
