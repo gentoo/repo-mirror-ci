@@ -273,7 +273,7 @@ create_pkgcheck_setpriv_wrapper() {
 		)
 	done
 	# Not just for Python itself but also the loader..
-	for dir in /usr/lib64 /lib64 /usr/lib/pkgcore ; do
+	for dir in /usr/lib/gcc /usr/lib64 /lib64 /usr/lib/pkgcore ; do
 		setpriv_args+=(
 			--landlock-rule path-beneath:read-dir:\${dir}
 			--landlock-rule path-beneath:read-file:\${dir}
