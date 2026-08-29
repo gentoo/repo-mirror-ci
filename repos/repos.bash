@@ -258,10 +258,10 @@ rsync --recursive --links --times --delete \
 #
 # Make sure repormirorci itself always has permissions even if repomirrorci-worker
 # is the owner.
-setfacl -d -R -m u:${USER}:rwx "${REPOS_DIR}" ||:
+setfacl -d -R -m u:${USER}:rwX "${REPOS_DIR}" ||:
 # The worker (in repomirrorci group) has to be able to write new cache
 # entries.
-setfacl -d -R -m g:${USER}:rwx "${REPOS_DIR}" ||:
+setfacl -d -R -m g:${USER}:rwX "${REPOS_DIR}" ||:
 # The worker needs to be able to write new cache entries, including
 # temporary files (.update.*) for pmaint regen --use-local-desc --pkg-desc-index.
 chmod 0770 "${REPOS_DIR}" "${REPOS_DIR}"/*/metadata "${REPOS_DIR}"/*/profiles ||:
