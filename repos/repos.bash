@@ -51,6 +51,11 @@ create_base_setpriv_wrapper() {
 		--landlock-rule path-beneath:make-reg:/tmp
 		--landlock-rule path-beneath:remove-file:/tmp
 
+		# bash may need these sometimes with pipes (maybe can use custom TMPDIR instead?)
+		--landlock-rule path-beneath:read-file:/tmp
+		--landlock-rule path-beneath:read-dir:/tmp
+		--landlock-rule path-beneath:make-fifo:/tmp
+
 		--landlock-rule path-beneath:read-dir:/etc/sandbox.d
 		--landlock-rule path-beneath:read-file:/etc/sandbox.d
 		--landlock-rule path-beneath:read-file:/etc/sandbox.conf
