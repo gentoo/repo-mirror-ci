@@ -340,7 +340,7 @@ CONFIG_DIR=${pull}/etc/portage
 
 if ! time timeout -k 30s "${PMAINT_TIMEOUT}" "${WORKER_DIR}"/pmaint-wrapper \
 	"${CONFIG_DIR}" "${REPOS_DIR}" "${pull}"/tmp \
-	pmaint --config "${CONFIG_DIR}" regen --use-local-desc --pkg-desc-index -t "$(nproc)" gentoo ; then
+	pmaint --config "${CONFIG_DIR}" regen --debug --use-local-desc --pkg-desc-index -t "$(nproc)" gentoo ; then
 	ret=$?
 	echo ETOOMANY > .pre-merge.borked
 	exit ${ret}
