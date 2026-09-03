@@ -1,16 +1,14 @@
 certificate version 0.1
-pusher Sam James <sam@gentoo.org> 1788000796 +0100
-pushee git+ssh://git.gentoo.org/proj/repo-mirror-ci.git
-nonce 1788000796-dbb512370379939bc29f82db0f9c0f096190a794
+pusher DF84256885283521 1788457447 +0200
+pushee git.gentoo.org:proj/repo-mirror-ci.git
+nonce 1788457447-61a89e057136982f26f3d74ffae2bbed18fedba3
 
-aecb49f686b9eb8feaa74b3e19d1eadfa44f2a2b d99594e626d69d79891461974aac12298bbe0317 refs/heads/master
+d99594e626d69d79891461974aac12298bbe0317 c97fafc65b6205b0f088d92762b65267e398b981 refs/heads/master
 -----BEGIN PGP SIGNATURE-----
 
-iQEBBAAWCgCpFiEEJaa7iN2bdkxrVUHCc4QJ9SDfkZAFAmqSuhwbFIAAAAAABAAO
-bWFudTIsMi41KzEuMTIsMiwyXxSAAAAAAC4AKGlzc3Vlci1mcHJAbm90YXRpb25z
-Lm9wZW5wZ3AuZmlmdGhob3JzZW1hbi5uZXQyNUE2QkI4OEREOUI3NjRDNkI1NTQx
-QzI3Mzg0MDlGNTIwREY5MTkwDxxzYW1AZ2VudG9vLm9yZwAKCRBzhAn1IN+RkCLa
-AQD3qcaUOjl/TXYiCfVVVsD/0Qr0i5rzbmsxflcKRJYgoAEAsE+E9WfPkavBGE2v
-qtHYlxhVaXS6l3hZ+mf61UDPNAs=
-=Ze2z
+iJEEABYKADkWIQQcFD0bEK7NPNmWHtiOMjR69AVa6AUCapmx5xsUgAAAAAAEAA5t
+YW51MiwyLjUrMS4xMiwyLDIACgkQjjI0evQFWugUeQD/W7GKq29rp7sN/gpYiW0l
+139sp4V3HuDLcuVgVz4wmLABAJ0n0ZvY3FAlHZGOTjgqrrt0N84yrtzPcgKbfisW
+dXkN
+=Ekeg
 -----END PGP SIGNATURE-----
