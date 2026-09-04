@@ -369,6 +369,13 @@ ts=$(cd -- "${pull}"/tmp; git log --pretty='%ct' -1)
 git add -- *.xml
 git diff --cached --quiet --exit-code || git commit -a -m "PR ${pr} @ $(date -u --date="@${ts}" "+%Y-%m-%d %H:%M:%S UTC")"
 
+# Store the report in gentoo-ci-http. The branch was cut from the gentoo-ci
+# master tip, so HEAD^ is the mainline scan this PR was measured against, which
+# is exactly the base its delta should be taken from.
+"${SCRIPT_DIR}"/utils/upload-scan.bash gentoo-ci \
+	"$(git rev-parse HEAD)" "$(git rev-parse HEAD^ 2>/dev/null || true)" \
+	output.xml --branch || :
+
 # if we have any breakages...
 if [[ -s ${pull}/gentoo-ci/borked.list ]]; then
 	pkgs=()
