@@ -113,7 +113,7 @@ create_base_setpriv_wrapper() {
 		)
 	done
 	# Python's ctypes.util.find_library invokes ld(1)!
-	for file in /usr/bin/ld ; do
+	for file in /usr/bin/ld /usr/bin/objdump /sbin/ldconfig ; do
 		setpriv_args+=(
 			--landlock-rule path-beneath:read-file:\${file}
 			--landlock-rule path-beneath:execute:\${file}
