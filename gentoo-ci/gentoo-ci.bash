@@ -145,6 +145,14 @@ create_pkgcheck_setpriv_wrapper() {
 			--landlock-rule path-beneath:execute:\${dir}
 		)
 	done
+	# Python's ctypes.util.find_library invokes ld(1)!
+	for dir in /usr/bin/ld /usr/$(portageq envvar CHOST)/bin ; do
+		setpriv_args+=(
+			--landlock-rule path-beneath:read-dir:\${dir}
+			--landlock-rule path-beneath:read-file:\${dir}
+			--landlock-rule path-beneath:execute:\${dir}
+		)
+	done
 	# site-packages
 	for dir in /usr/lib/python3.?? /etc/python-exec ; do
 		setpriv_args+=(
