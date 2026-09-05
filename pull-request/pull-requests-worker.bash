@@ -340,7 +340,7 @@ CONFIG_DIR=${pull}/etc/portage
 
 if ! time timeout -k 30s "${PMAINT_TIMEOUT}" "${WORKER_DIR}"/pmaint-wrapper \
 	"${CONFIG_DIR}" "${REPOS_DIR}" "${pull}"/tmp \
-	pmaint --config "${CONFIG_DIR}" regen --debug --use-local-desc --pkg-desc-index -t "$(nproc)" gentoo ; then
+	pmaint --config "${CONFIG_DIR}" regen --debug --sandbox=y --use-local-desc --pkg-desc-index -t "$(nproc)" gentoo ; then
 	ret=$?
 	echo ETOOMANY > .pre-merge.borked
 	exit ${ret}
@@ -355,7 +355,7 @@ pushd -- "${pull}"/tmp >/dev/null
 HOME=${pull}/gentoo-ci time timeout -k 30s "${CI_TIMEOUT}" "${WORKER_DIR}"/pkgcheck-wrapper \
 	"${CONFIG_DIR}" "${pull}"/tmp "${pull}"/tmp \
 	pkgcheck --config "${CONFIG_DIR}" scan \
-	--reporter XmlReporter ${PKGCHECK_PR_OPTIONS} > output.xml.tmp
+	--sandbox=y --reporter XmlReporter ${PKGCHECK_PR_OPTIONS} > output.xml.tmp
 popd >/dev/null
 # Sort XML for better Git delta compression
 cat "${pull}"/tmp/output.xml.tmp | xsltproc "${SCRIPT_DIR}"/sort-output.xsl - > output.xml
@@ -392,7 +392,9 @@ if [[ -s ${pull}/gentoo-ci/borked.list ]]; then
 
 		if [[ ${#pkgs[@]} -gt 0 ]]; then
 			pkgcheck --config "${CONFIG_DIR}" \
-				scan --reporter XmlReporter "${pkgs[@]}" \
+				scan \
+				--sandbox=y \
+				--reporter XmlReporter "${pkgs[@]}" \
 				${PKGCHECK_PR_OPTIONS} \
 				-s pkg,ver \
 				> .pre-merge.xml
@@ -400,7 +402,9 @@ if [[ -s ${pull}/gentoo-ci/borked.list ]]; then
 		fi
 
 		pkgcheck --config "${CONFIG_DIR}" \
-			scan --reporter XmlReporter "*/*" \
+			scan \
+			--sandbox=y \
+			--reporter XmlReporter "*/*" \
 			${PKGCHECK_PR_OPTIONS} \
 			-s repo,cat \
 			> .pre-merge-g.xml

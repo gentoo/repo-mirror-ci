@@ -199,6 +199,7 @@ if [[ ${PREV_COMMIT} != ${CURRENT_COMMIT} ]]; then
 		"${MIRROR_DIR}" \
 		"${MIRROR_DIR}/gentoo" \
 		pkgcheck --config "${CONFIG_DIR}" scan \
+		--sandbox=y \
 		--reporter XmlReporter ${PKGCHECK_OPTIONS} > output.xml.tmp
 	popd >/dev/null
 	# Sort XML for better Git delta compression

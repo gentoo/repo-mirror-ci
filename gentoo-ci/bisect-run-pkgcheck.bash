@@ -40,7 +40,9 @@ sudo -u "${WORKER_USER}" SYNC_DIR="${SYNC_DIR}" MIRROR_DIR="${MIRROR_DIR}" \
 	--uid $(id -u "${WORKER_USER}") --gid $(id -g "${WORKER_USER}") \
 	${DATA_DIR}/pkgcheck-wrapper "${CONFIG_ROOT_GENTOO_CI}/etc/portage" \
 	"${dir}" "${dir}"/gentoo \
-	pkgcheck --config "${CONFIG_DIR}" scan --reporter XmlReporter "${@}" \
+	pkgcheck --config "${CONFIG_DIR}" scan \
+	--sandbox=y \
+	--reporter XmlReporter "${@}" \
 	--glsa-dir "${MIRROR_DIR}"/gentoo/metadata/glsa \
 	${PKGCHECK_BISECT_OPTIONS} \
 	> "${BISECT_TMP}/.bisect.tmp.xml"

@@ -277,6 +277,7 @@ for r in ${REPOS}; do
 		${DATA_DIR}/pmaint-wrapper \
 		"${CONFIG_ROOT}/etc/portage" "${REPOS_DIR}" "${REPOS_DIR}/${name}" \
 		pmaint --config "${CONFIG_ROOT}/etc/portage" regen \
+		--sandbox=y \
 		--use-local-desc --pkg-desc-index -t "$(nproc)" "${name}"
 
 	if [[ ! -e ${MIRROR_DIR}/${name} ]]; then
