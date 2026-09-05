@@ -139,7 +139,13 @@ create_pmaint_setpriv_wrapper() {
 		)
 	done
 	# Python's ctypes.util.find_library invokes ld(1)!
-	for dir in /usr/bin/ld /usr/$(portageq envvar CHOST)/bin ; do
+	for file in /usr/bin/ld ; do
+		setpriv_args+=(
+			--landlock-rule path-beneath:read-file:\${file}
+			--landlock-rule path-beneath:execute:\${file}
+		)
+	done
+	for dir in /usr/$(portageq envvar CHOST)/bin ; do
 		setpriv_args+=(
 			--landlock-rule path-beneath:read-dir:\${dir}
 			--landlock-rule path-beneath:read-file:\${dir}
@@ -299,7 +305,13 @@ create_pkgcheck_setpriv_wrapper() {
 		)
 	done
 	# Python's ctypes.util.find_library invokes ld(1)!
-	for dir in /usr/bin/ld /usr/$(portageq envvar CHOST)/bin ; do
+	for file in /usr/bin/ld ; do
+		setpriv_args+=(
+			--landlock-rule path-beneath:read-file:\${file}
+			--landlock-rule path-beneath:execute:\${file}
+		)
+	done
+	for dir in /usr/$(portageq envvar CHOST)/bin ; do
 		setpriv_args+=(
 			--landlock-rule path-beneath:read-dir:\${dir}
 			--landlock-rule path-beneath:read-file:\${dir}
