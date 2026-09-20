@@ -284,7 +284,9 @@ chmod 0770 "${REPOS_DIR}" "${REPOS_DIR}"/*/metadata "${REPOS_DIR}"/*/profiles ||
 for r in ${REPOS}; do
 	name=${r%%:*}
 
-	# regen caches
+	# Regen caches. Don't ignore errors here as we'd rather fail-early if an
+	# ebuild does something suspicious or really broken, pmaint regen runs with
+	# fewer permissions than pkgcheck does.
 	sudo -u "${WORKER_USER}" \
 		bwrap --bind / / --dev /dev --proc /proc --unshare-all \
 		--uid $(id -u "${WORKER_USER}") --gid $(id -g "${WORKER_USER}") \

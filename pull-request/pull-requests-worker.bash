@@ -41,6 +41,8 @@ create_pmaint_setpriv_wrapper() {
 	#!/bin/bash
 	set -x
 
+	rm -f "${pull}"/pmaint.log
+
 	portage_dir=\$1
 	repos_dir=\$2
 	repo_dir=\$3
@@ -366,8 +368,10 @@ git merge --quiet -m "Merge PR ${pr}" "${ref}"
 # update cache
 CONFIG_DIR=${pull}/etc/portage
 
-rm -f "${pull}"/pmaint.log
 git -C "${pull}"/tmp rev-parse HEAD > "${WORKER_DIR}"/pmaint-commit
+# Don't ignore errors here as we'd rather fail-early if an ebuild does something
+# suspicious or really broken, pmaint regen runs with fewer permissions than
+# pkgcheck does.
 if ! time timeout -k 30s "${PMAINT_TIMEOUT}" "${WORKER_DIR}"/pmaint-wrapper \
 	"${CONFIG_DIR}" "${REPOS_DIR}" "${pull}"/tmp \
 	pmaint --config "${CONFIG_DIR}" regen --debug --sandbox=y --use-local-desc --pkg-desc-index -t "$(nproc)" gentoo ; then
