@@ -123,7 +123,7 @@ create_pmaint_setpriv_wrapper() {
 			--landlock-rule path-beneath:execute:\${file}
 		)
 	done
-	for dir in /usr/lib/python-exec /usr/lib64/python-exec ; do
+	for dir in /usr/lib/python-exec ; do
 		setpriv_args+=(
 			--landlock-rule path-beneath:read-dir:\${dir}
 			--landlock-rule path-beneath:read-file:\${dir}
@@ -289,7 +289,7 @@ create_pkgcheck_setpriv_wrapper() {
 			--landlock-rule path-beneath:execute:\${file}
 		)
 	done
-	for dir in /usr/lib/python-exec /usr/lib64/python-exec ; do
+	for dir in /usr/lib/python-exec ; do
 		setpriv_args+=(
 			--landlock-rule path-beneath:read-dir:\${dir}
 			--landlock-rule path-beneath:read-file:\${dir}
