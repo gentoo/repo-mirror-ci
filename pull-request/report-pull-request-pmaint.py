@@ -111,8 +111,7 @@ def report_github_pr(
         ":x: **broken**",
     )
 
-
-    body += "failed `pmaint regen` output follows:\n"
+    body += "\nNew issues found. Failed `pmaint regen` output follows:\n"
     body += "```\n"
     with open(pmaint_log, "r") as f:
         body += '\n'.join(f.readlines())
