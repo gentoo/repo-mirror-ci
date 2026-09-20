@@ -20,6 +20,14 @@ if [[ -s ${pull}/current-pr ]]; then
 		codeberg) prlink="https://codeberg.org/${CODEBERG_REPO}/pulls/${prid}";;
 		*) echo "unknown forge ${forge}"; exit 1;;
 	esac
+
+	if [[ -s "${WORKER_DIR}"/pmaint.log && -s "${WORKER_DIR}"/pmaint-commit ]] ; then
+		hash=$(<"${WORKER_DIR}"/pmaint-commit)
+		"${SCRIPT_DIR}"/pull-request/report-pull-request-pmaint.py \
+			"${forge}" "${prid}" "${hash}" \
+			"${WORKER_DIR}"/pmaint.log
+	fi
+
 	"${SCRIPT_DIR}"/pull-request/set-pull-request-status.py "${pr}" error \
 		"QA checks crashed. Please rebase and check profile changes for syntax errors."
 	sendmail "${CRONJOB_ADMIN_MAIL}" <<-EOF

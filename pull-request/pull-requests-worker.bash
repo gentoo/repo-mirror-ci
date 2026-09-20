@@ -167,7 +167,7 @@ create_pmaint_setpriv_wrapper() {
 		)
 	done
 
-	exec setpriv "\${setpriv_args[@]}" -- "\$@"
+	exec setpriv "\${setpriv_args[@]}" -- "\$@" &> "${pull}"/pmaint.log
 	EOF
 
 	chmod +x "${WORKER_DIR}"/pmaint-wrapper
@@ -366,6 +366,8 @@ git merge --quiet -m "Merge PR ${pr}" "${ref}"
 # update cache
 CONFIG_DIR=${pull}/etc/portage
 
+rm -f "${pull}"/pmaint.log
+git -C "${pull}"/tmp rev-parse HEAD > "${WORKER_DIR}"/pmaint-commit
 if ! time timeout -k 30s "${PMAINT_TIMEOUT}" "${WORKER_DIR}"/pmaint-wrapper \
 	"${CONFIG_DIR}" "${REPOS_DIR}" "${pull}"/tmp \
 	pmaint --config "${CONFIG_DIR}" regen --debug --sandbox=y --use-local-desc --pkg-desc-index -t "$(nproc)" gentoo ; then
