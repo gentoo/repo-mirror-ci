@@ -57,7 +57,7 @@ def report_codeberg_pr(
 *Status*: :x: **broken** (`pmaint regen` failed)
 """
 
-        body += "failed `pmaint regen` output follows:\n"
+        body += "\nNew issues found. Failed `pmaint regen` output follows:\n"
         body += "```\n"
         with open(pmaint_log, "r") as f:
             body += '\n'.join(f.readlines())
