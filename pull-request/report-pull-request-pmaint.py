@@ -108,7 +108,7 @@ def report_github_pr(
 """ % (
         datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d %H:%M UTC"),
         prhash,
-        ":x: **broken**",
+        ":x: **broken** (`pmaint regen` failed)",
     )
 
     body += "\nNew issues found. Failed `pmaint regen` output follows:\n"
