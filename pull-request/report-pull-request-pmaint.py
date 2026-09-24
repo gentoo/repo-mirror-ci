@@ -84,6 +84,7 @@ def report_github_pr(
     g = github.Github(GITHUB_USERNAME, token, per_page=50)
     r = g.get_repo(GITHUB_REPO)
     pr = r.get_pull(int(prid))
+    c = r.get_commit(prhash)
 
     # delete old results
     had_broken = False
@@ -117,7 +118,7 @@ def report_github_pr(
     body += "```\n"
 
     pr.create_issue_comment(body)
-    c.create_status(
+    pr.create_status(
         "failure",
         description="PR introduced new issues",
         context="gentoo-ci",
