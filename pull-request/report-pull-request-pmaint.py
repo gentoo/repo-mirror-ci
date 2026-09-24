@@ -118,7 +118,7 @@ def report_github_pr(
     body += "```\n"
 
     pr.create_issue_comment(body)
-    pr.create_status(
+    c.create_status(
         "failure",
         description="PR introduced new issues",
         context="gentoo-ci",
