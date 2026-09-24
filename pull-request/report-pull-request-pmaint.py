@@ -84,7 +84,6 @@ def report_github_pr(
     g = github.Github(GITHUB_USERNAME, token, per_page=50)
     r = g.get_repo(GITHUB_REPO)
     pr = r.get_pull(int(prid))
-    c = r.get_commit(commit_hash)
 
     # delete old results
     had_broken = False
@@ -107,7 +106,7 @@ def report_github_pr(
 *Status*: %s
 """ % (
         datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d %H:%M UTC"),
-        commit_hash,
+        prhash,
         ":x: **broken**",
     )
 
