@@ -2,12 +2,12 @@
 # Upload a pkgcheck XML report to gentoo-ci-http.
 #
 # The report is identified by the gentoo-ci git commit that carries it, so the
-# same sha addresses it under both /output (git-backed) and /output2 while the
-# two run side by side.
+# same sha addresses it under both /output, which this serves, and /output2,
+# the git-backed implementation still running alongside it.
 #
 # Usage: upload-scan.bash <repo> <commit> <parent> <xml> [--branch]
 #
-#   repo    report set, matching the URL: /output2/<repo>/...
+#   repo    report set, matching the URL: /output/<repo>/...
 #   commit  scan id, normally the gentoo-ci commit sha
 #   parent  scan this one was produced against; may be empty
 #   xml     the report file

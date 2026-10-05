@@ -231,7 +231,7 @@ if [[ ${PREV_COMMIT} != ${CURRENT_COMMIT} ]]; then
 	git diff --cached --quiet --exit-code || git commit -a -m "$(date -u --date="@$(cd -- "${SYNC_DIR}"/gentoo; git log --pretty="%ct" -1)" "+%Y-%m-%d %H:%M:%S UTC")"
 	git push
 	# Also store the report in gentoo-ci-http, keyed by the commit just made so
-	# it is reachable at the same sha under /output2. Best effort: the report is
+	# it is reachable at the same sha under /output. Best effort: the report is
 	# already in git either way.
 	"${SCRIPT_DIR}"/utils/upload-scan.bash gentoo-ci \
 		"$(git rev-parse HEAD)" "$(git rev-parse HEAD^ 2>/dev/null || true)" \
