@@ -372,13 +372,13 @@ git -C "${pull}"/tmp rev-parse HEAD > "${WORKER_DIR}"/pmaint-commit
 # Don't ignore errors here as we'd rather fail-early if an ebuild does something
 # suspicious or really broken, pmaint regen runs with fewer permissions than
 # pkgcheck does.
-if ! time timeout -k 30s "${PMAINT_TIMEOUT}" "${WORKER_DIR}"/pmaint-wrapper \
+time timeout -k 30s "${PMAINT_TIMEOUT}" "${WORKER_DIR}"/pmaint-wrapper \
 	"${CONFIG_DIR}" "${REPOS_DIR}" "${pull}"/tmp \
-	pmaint --config "${CONFIG_DIR}" regen --debug --sandbox=y --use-local-desc --pkg-desc-index -t "$(nproc)" gentoo ; then
+	pmaint --config "${CONFIG_DIR}" regen --debug --sandbox=y --use-local-desc --pkg-desc-index -t "$(nproc)" gentoo || {
 	ret=$?
 	echo ETOOMANY > .pre-merge.borked
 	exit ${ret}
-fi
+}
 
 cd ..
 git clone -s "${gentooci}" gentoo-ci
