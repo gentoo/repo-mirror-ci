@@ -376,6 +376,7 @@ time timeout -k 30s "${PMAINT_TIMEOUT}" "${WORKER_DIR}"/pmaint-wrapper \
 	"${CONFIG_DIR}" "${REPOS_DIR}" "${pull}"/tmp \
 	pmaint --config "${CONFIG_DIR}" regen --debug --sandbox=y --use-local-desc --pkg-desc-index -t "$(nproc)" gentoo || {
 	ret=$?
+	cat "${pull}"/pmaint.log
 	echo ETOOMANY > .pre-merge.borked
 	exit ${ret}
 }
