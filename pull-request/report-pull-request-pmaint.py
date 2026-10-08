@@ -60,7 +60,7 @@ def report_codeberg_pr(
         body += "\nNew issues found. Failed `pmaint regen` output follows:\n"
         body += "```\n"
         with open(pmaint_log, "r") as f:
-            body += '\n'.join(f.readlines())
+            body += f.readlines()
         body += "```\n"
 
         cb.create_comment(prid, body)
@@ -114,7 +114,7 @@ def report_github_pr(
     body += "\nNew issues found. Failed `pmaint regen` output follows:\n"
     body += "```\n"
     with open(pmaint_log, "r") as f:
-        body += '\n'.join(f.readlines())
+        body += f.readlines()
     body += "```\n"
 
     pr.create_issue_comment(body)
