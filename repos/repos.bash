@@ -159,6 +159,12 @@ create_pmaint_sync_setpriv_wrapper() {
 			--landlock-rule path-beneath:execute:\${bin}
 		)
 	done
+	# git aborts if the system config exists but can't be read
+	if [[ -e /etc/gitconfig ]] ; then
+		setpriv_args+=(
+			--landlock-rule path-beneath:read-file:/etc/gitconfig
+		)
+	fi
 
 	setpriv_args+=(
 		# Fetching
