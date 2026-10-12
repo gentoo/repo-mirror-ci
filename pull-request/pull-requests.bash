@@ -68,6 +68,10 @@ if [[ -n ${pr} ]]; then
 	git fetch -f "${remote}" "refs/pull/${prid}/head:${ref}"
 	hash=$(git rev-parse "${ref}")
 
+	# the worker branches off this checkout, so start from the latest scan
+	git -C "${gentooci}" fetch -q origin master
+	git -C "${gentooci}" checkout -q --detach FETCH_HEAD
+
 	sudo -u "${WORKER_USER}" \
 		bwrap --bind / / --dev /dev --proc /proc --unshare-all \
 		"${SCRIPT_DIR}"/pull-request/pull-requests-worker.bash \
