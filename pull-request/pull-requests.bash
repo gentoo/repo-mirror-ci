@@ -78,6 +78,13 @@ if [[ -n ${pr} ]]; then
 	pr_hash=$(git rev-parse --short FETCH_HEAD)
 	git push -f origin "FETCH_HEAD:refs/heads/pull-${forge}-${prid}"
 
+	# Store the report in gentoo-ci-http. The branch was cut from the gentoo-ci
+	# master tip, so HEAD^ is the mainline scan this PR was measured against, which
+	# is exactly the base its delta should be taken from.
+	"${SCRIPT_DIR}"/utils/upload-scan.bash gentoo-ci \
+		"$(git rev-parse FETCH_HEAD)" "$(git rev-parse FETCH_HEAD^ 2>/dev/null || true)" \
+		"${WORKER_DIR}"/gentoo-ci/output.xml --branch
+
 	curl "https://qa-reports-cdn-origin.gentoo.org/cgi-bin/trigger-pull.cgi?gentoo-ci" || :
 	"${SCRIPT_DIR}"/pull-request/report-pull-request.py "${forge}" "${prid}" "${pr_hash}" \
 		"${WORKER_DIR}"/gentoo-ci/borked.list "${WORKER_DIR}"/tmp/.pre-merge.borked "${hash}"
