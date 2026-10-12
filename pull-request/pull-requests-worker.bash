@@ -275,6 +275,7 @@ create_pkgcheck_setpriv_wrapper() {
 			--landlock-rule path-beneath:execute:\${bin}
 		)
 	done
+	export GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null
 
 	# Needed for Python to be able to find libb2 for hashlib
 	for file in /etc/ld.so.cache ; do

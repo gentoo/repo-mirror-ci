@@ -114,12 +114,7 @@ create_pkgcheck_setpriv_wrapper() {
 			--landlock-rule path-beneath:execute:\${bin}
 		)
 	done
-	# git aborts if the system config exists but can't be read
-	if [[ -e /etc/gitconfig ]] ; then
-		setpriv_args+=(
-			--landlock-rule path-beneath:read-file:/etc/gitconfig
-		)
-	fi
+	export GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null
 
 	# Needed for Python to be able to find libb2 for hashlib
 	for file in /etc/ld.so.cache ; do
