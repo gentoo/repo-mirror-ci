@@ -1,20 +1,5 @@
 #!/bin/bash
 
-every_hrs() {
-	hrs=${1}
-	shift
-
-	cmd=${*}
-	tag=${cmd//[ :.\/]/_}
-	now=$(date +%s)
-	last=$(<".git/last-${tag}") || last=0
-
-	if [[ $((now - last )) -ge $((hrs * 3600)) ]]; then
-		"${@}"
-		echo "${now}" > ".git/last-${tag}"
-	fi
-}
-
 merge_subrepo() {
 	url=${1}
 	path=${2}
@@ -38,11 +23,11 @@ set -e -x
 
 cd -- "${1}"
 export EDITOR=cat
-every_hrs 24 merge_subrepo git@git.gentoo.org:data/dtd.git metadata/dtd
+merge_subrepo git@git.gentoo.org:data/dtd.git metadata/dtd
 merge_subrepo git@git.gentoo.org:data/glsa.git metadata/glsa
-every_hrs 1 merge_subrepo git@git.gentoo.org:data/gentoo-news.git metadata/news
-every_hrs 24 merge_subrepo git@git.gentoo.org:data/xml-schema.git metadata/xml-schema
-every_hrs 6 fetch_file https://api.gentoo.org/metastructure/projects.xml metadata/
+merge_subrepo git@git.gentoo.org:data/gentoo-news.git metadata/news
+merge_subrepo git@git.gentoo.org:data/xml-schema.git metadata/xml-schema
+fetch_file https://api.gentoo.org/metastructure/projects.xml metadata/
 
 # set appropriate remotes if we're working off fresh clone
 if [[ -z $(git config --get remote.gentoo.url) ]]; then
