@@ -79,7 +79,7 @@ def scan_codeberg(db: dict):
         to_process = sorted(
             to_process,
             key=lambda x: (
-                not any(x["name"] == "priority-ci" for x in pr["labels"]),
+                not any(label["name"] == "priority-ci" for label in x["labels"]),
                 datetime.fromisoformat(x["updated_at"]),
             ),
         )
