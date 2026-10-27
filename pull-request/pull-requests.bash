@@ -47,7 +47,7 @@ git pull
 
 # check if we have anything to process
 mkdir -p -- "${pull}"
-pr=$( "${SCRIPT_DIR}"/pull-request/scan-pull-requests.py )
+pr=$(timeout -k 5m "${SCRIPT_DIR}"/pull-request/scan-pull-requests.py)
 forge="${pr%/*}"
 prid="${pr#*/}"
 
