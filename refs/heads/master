@@ -1,16 +1,16 @@
 certificate version 0.1
-pusher Thomas Bracht Laumann Jespersen <laumann@gentoo.org> 1792821759 +0200
-pushee git.gentoo.org:proj/repo-mirror-ci
-nonce 1792821759-a5aa7782c287ebb63ea2c84d09d8f1edecba7a04
+pusher Sam James <sam@gentoo.org> 1793125385 +0000
+pushee git+ssh://git.gentoo.org/proj/repo-mirror-ci.git
+nonce 1793125385-a6370102a712eaab32ff4e1a679a076594a9ad63
 
-040b53e46c184d5928d47629da0b6177bc5abae3 652cb4008d9a926e04c2f0d815edeedcc402430f refs/heads/master
+652cb4008d9a926e04c2f0d815edeedcc402430f 2d2d8a9b252e0c2c281c64a0851f3730e74816fd refs/heads/master
 -----BEGIN PGP SIGNATURE-----
 
-iQEFBAAWCgCtFiEEq7SpitE7F8gDwQG+I/uGahf0qDsFAmrcSf8bFIAAAAAABAAO
+iQEBBAAWCgCpFiEEJaa7iN2bdkxrVUHCc4QJ9SDfkZAFAmrg7AkbFIAAAAAABAAO
 bWFudTIsMi41KzEuMTIsMiwyXxSAAAAAAC4AKGlzc3Vlci1mcHJAbm90YXRpb25z
-Lm9wZW5wZ3AuZmlmdGhob3JzZW1hbi5uZXRBQkI0QTk4QUQxM0IxN0M4MDNDMTAx
-QkUyM0ZCODY2QTE3RjRBODNCExxsYXVtYW5uQGdlbnRvby5vcmcACgkQI/uGahf0
-qDtOYgEAx11Wmsee2czhOrL9A2ug0wbO2ouCH8LpPoke+nAfz38A/0tyDeTOf89r
-4/DtNHlfYqOYRnC52/kjIlge3rqbVHEK
-=9dMB
+Lm9wZW5wZ3AuZmlmdGhob3JzZW1hbi5uZXQyNUE2QkI4OEREOUI3NjRDNkI1NTQx
+QzI3Mzg0MDlGNTIwREY5MTkwDxxzYW1AZ2VudG9vLm9yZwAKCRBzhAn1IN+RkDIa
+AP9c1zruPwX4IVxn9ipLYBOEzy10R/1cgAoRjkJBHV4TRQEAnIN02Sc2vDtLbT0a
+oeaSNibpWtAzGGI5WEwIaFjZAws=
+=qtzy
 -----END PGP SIGNATURE-----
