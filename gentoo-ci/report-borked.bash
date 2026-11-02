@@ -273,3 +273,5 @@ elif [[ -n ${fixed[@]} ]]; then
 		irk "${IRC_TO}" "${mail_cc_s// /, }, Gentoo suffers no more. Thank you!"
 	fi
 fi
+
+touch ${repo}/croaked

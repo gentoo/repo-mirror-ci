@@ -246,5 +246,22 @@ if [[ ${PREV_COMMIT} != ${CURRENT_COMMIT} ]]; then
 		cd -- "${MIRROR_DIR}"/gentoo
 		git fetch --all
 		git push origin master:stable
+
+		rm -f "${GENTOO_CI_GIT}"/croaked
+	fi
+else
+	# We're at the same commit as before and the tree is (still) broken.
+	if [[ ! -s ${GENTOO_CI_GIT}/borked.list ]]; then
+		exit 0
+	fi
+
+	# If it's been a while since we last croaked about it, croak again,
+	# as we don't want the tree to remain broken for long.
+	LAST_CROAK_TIME=$(stat -c "%Y" "${GENTOO_CI_GIT}"/croaked)
+	CURRENT_TIME=$(date "+%s")
+
+	# Complain every 30m.
+	if (( CURRENT_TIME - LAST_CROAK_TIME > 60 * 30 )) ; then
+		"${SCRIPT_DIR}"/gentoo-ci/report-borked.bash "${PREV_COMMIT}" "${CURRENT_COMMIT}"
 	fi
 fi
