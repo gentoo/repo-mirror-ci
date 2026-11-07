@@ -246,19 +246,34 @@ done
 create_pmaint_sync_setpriv_wrapper
 create_pmaint_setpriv_wrapper
 
+declare -A REPOS_MAP SIGNED_REPOS_MAP
+for r in ${REPOS} ; do
+	REPOS_MAP[${r}]=1
+done
+
 # sync all repos
-for r in ${REPOS}; do
+for r in ${!REPOS_MAP[@]}; do
+	[[ ${REPOS_MAP[${r}] == 1 ]] || continue
+
 	name=${r%%:*}
 
-	${DATA_DIR}/pmaint-sync-wrapper \
+	if ! ${DATA_DIR}/pmaint-sync-wrapper \
 		"${CONFIG_ROOT_SYNC}/etc/portage" \
 		"${SYNC_DIR}" \
 		"${SYNC_DIR}/${name}" \
-		pmaint --config "${CONFIG_ROOT_SYNC}/etc/portage" sync "${name}"
+		pmaint --config "${CONFIG_ROOT_SYNC}/etc/portage" sync "${name}" ; then
+		# Drop it from the repo list
+		REPOS_MAP[${r}]=0
+	fi
 done
 
 # check signed repos
-for r in ${SIGNED_REPOS}; do
+for r in ${!SIGNED_REPOS_MAP[@]}; do
+	# skip if this repo failed to sync
+	[[ ${REPOS_MAP[${r}] == 1 ]] || continue
+
+	# Treat failures of this kind as fatal, don't just drop them from
+	# the repo list.
 	[[ $(
 		cd "${SYNC_DIR}/${r}" && git show -q --pretty="format:%G?" HEAD
 	) == [GU] ]]
@@ -287,20 +302,27 @@ setfacl -d -R -m g:${USER}:rwX "${REPOS_DIR}" ||:
 chmod 0770 "${REPOS_DIR}" "${REPOS_DIR}"/*/metadata "${REPOS_DIR}"/*/profiles ||:
 
 # prepare mirrors
-for r in ${REPOS}; do
+for r in ${!REPOS_MAP[@]}; do
+	# skip if this repo failed to sync
+	[[ ${REPOS_MAP[${r}] == 1 ]] || continue
+
 	name=${r%%:*}
 
 	# Regen caches. Don't ignore errors here as we'd rather fail-early if an
 	# ebuild does something suspicious or really broken, pmaint regen runs with
 	# fewer permissions than pkgcheck does.
-	sudo -u "${WORKER_USER}" \
+	if ! sudo -u "${WORKER_USER}" \
 		bwrap --bind / / --dev /dev --proc /proc --unshare-all \
 		--uid $(id -u "${WORKER_USER}") --gid $(id -g "${WORKER_USER}") \
 		${DATA_DIR}/pmaint-wrapper \
 		"${CONFIG_ROOT}/etc/portage" "${REPOS_DIR}" "${REPOS_DIR}/${name}" \
 		pmaint --config "${CONFIG_ROOT}/etc/portage" regen \
 		--sandbox=y \
-		--use-local-desc --pkg-desc-index -t "$(nproc)" "${name}"
+		--use-local-desc --pkg-desc-index -t "$(nproc)" "${name}" ; then
+		# Drop it from the repo list & skip
+		REPOS_MAP[${r}]=0
+		continue
+	fi
 
 	if [[ ! -e ${MIRROR_DIR}/${name} ]]; then
 		git clone "git@github.com:gentoo-mirror/${name}" \
@@ -342,3 +364,13 @@ for r in ${REPOS}; do
 		fi
 	)
 done
+
+# check if any repos failed and exit non-zero if they did
+rc=0
+for r in ${!REPOS_MAP[@]}; do
+	[[ ${REPOS_MAP[${r}] == 0 ]] || continue
+
+	printf "${r%%:*} failed to sync or generate metadata!\n"
+	: $(( ret |= 1 ))
+done
+exit ${ret}
