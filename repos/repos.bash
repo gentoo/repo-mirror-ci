@@ -276,7 +276,7 @@ rsync --recursive --links --times --delete \
 # The setfacl commands may fail if ${WORKER_USER} already owns them but
 # that's fine for us.
 #
-# Make sure repormirorci itself always has permissions even if repomirrorci-worker
+# Make sure repormirrorci itself always has permissions even if repomirrorci-worker
 # is the owner.
 setfacl -d -R -m u:${USER}:rwX "${REPOS_DIR}" ||:
 # The worker (in repomirrorci group) has to be able to write new cache
