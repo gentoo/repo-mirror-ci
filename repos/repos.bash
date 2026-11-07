@@ -250,6 +250,9 @@ declare -A REPOS_MAP SIGNED_REPOS_MAP
 for r in ${REPOS} ; do
 	REPOS_MAP[${r}]=1
 done
+for sr in ${SIGNED_REPOS} ; do
+	SIGNED_REPOS_MAP[${sr}]=1
+done
 
 # sync all repos
 for r in ${!REPOS_MAP[@]}; do
