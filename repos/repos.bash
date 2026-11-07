@@ -256,7 +256,7 @@ done
 
 # sync all repos
 for r in ${!REPOS_MAP[@]}; do
-	[[ ${REPOS_MAP[${r}] == 1 ]] || continue
+	[[ ${REPOS_MAP[${r}]} == 1 ]] || continue
 
 	name=${r%%:*}
 
@@ -273,7 +273,7 @@ done
 # check signed repos
 for r in ${!SIGNED_REPOS_MAP[@]}; do
 	# skip if this repo failed to sync
-	[[ ${REPOS_MAP[${r}] == 1 ]] || continue
+	[[ ${REPOS_MAP[${r}]} == 1 ]] || continue
 
 	# Treat failures of this kind as fatal, don't just drop them from
 	# the repo list.
@@ -307,7 +307,7 @@ chmod 0770 "${REPOS_DIR}" "${REPOS_DIR}"/*/metadata "${REPOS_DIR}"/*/profiles ||
 # prepare mirrors
 for r in ${!REPOS_MAP[@]}; do
 	# skip if this repo failed to sync
-	[[ ${REPOS_MAP[${r}] == 1 ]] || continue
+	[[ ${REPOS_MAP[${r}]} == 1 ]] || continue
 
 	name=${r%%:*}
 
@@ -371,7 +371,7 @@ done
 # check if any repos failed and exit non-zero if they did
 rc=0
 for r in ${!REPOS_MAP[@]}; do
-	[[ ${REPOS_MAP[${r}] == 0 ]] || continue
+	[[ ${REPOS_MAP[${r}]} == 0 ]] || continue
 
 	printf "${r%%:*} failed to sync or generate metadata!\n"
 	: $(( ret |= 1 ))
