@@ -4,6 +4,7 @@
 . /lib/gentoo/functions.sh
 
 ret=0
+ok_cmds=()
 failed_cmds=()
 
 # repos.bash may fail but still have pulled gentoo, so keep going and report
@@ -17,12 +18,17 @@ for cmd in "${SCRIPT_DIR}"/repos/repos.bash "${SCRIPT_DIR}"/gentoo-ci/gentoo-ci.
 
 	if (( ${tmp} != 0 )) ; then
 		failed_cmds+=( "${cmd}" )
+	else
+		ok_cmds+=( "${cmd}" )
 	fi
 
 	eend ${tmp}
 done
 
 # Summarise failed commands at the end
+for cmd in "${ok_cmds[@]}" ; do
+	elog "Command succeeded: ${cmd}"
+done
 for cmd in "${failed_cmds[@]}" ; do
 	eerror "Command failed: ${cmd}"
 done
