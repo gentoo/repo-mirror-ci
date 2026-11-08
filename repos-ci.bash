@@ -27,7 +27,7 @@ done
 
 # Summarise failed commands at the end
 for cmd in "${ok_cmds[@]}" ; do
-	elog "Command succeeded: ${cmd}"
+	einfo "Command succeeded: ${cmd}"
 done
 for cmd in "${failed_cmds[@]}" ; do
 	eerror "Command failed: ${cmd}"
