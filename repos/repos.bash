@@ -369,7 +369,7 @@ for r in ${!REPOS_MAP[@]}; do
 done
 
 # check if any repos failed and exit non-zero if they did
-rc=0
+ret=0
 for r in ${!REPOS_MAP[@]}; do
 	[[ ${REPOS_MAP[${r}]} == 0 ]] || continue
 
