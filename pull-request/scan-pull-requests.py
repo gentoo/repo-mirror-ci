@@ -15,7 +15,7 @@ from codebergapi import CodebergAPI
 from requests.exceptions import ConnectionError
 
 
-def scan_codeberg(db: dict):
+def scan_codeberg(db: dict, queue_len: int) -> list[str]:
     CODEBERG_USERNAME = os.environ["CODEBERG_USERNAME"]
     CODEBERG_TOKEN_FILE = os.environ["CODEBERG_TOKEN_FILE"]
     (owner, repo) = os.environ["CODEBERG_REPO"].split("/")
@@ -88,11 +88,11 @@ def scan_codeberg(db: dict):
         for i, pr in enumerate(to_process):
             pr_key = f"codeberg/{pr['number']}"
             sha = pr["head"]["sha"]
-            if i == 0:
+            if i + queue_len == 0:
                 desc = "QA checks in progress..."
                 db[pr_key] = sha
             else:
-                desc = "QA checks pending. Currently {}. in queue.".format(i)
+                desc = f"QA checks pending. Currently {i + queue_len}. in queue."
             cb.commit_set_status(sha, "pending", description=desc, context="gentoo-ci")
 
             print(
@@ -102,7 +102,7 @@ def scan_codeberg(db: dict):
         return queue
 
 
-def scan_github(db: dict, queue_len: int):
+def scan_github(db: dict, queue_len: int) -> list[str]:
     """
     Given a db of knowns PRs, inspect open PRs, update commit
     statuses, and update the db accordingly. Return a list of
