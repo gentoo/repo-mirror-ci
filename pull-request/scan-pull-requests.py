@@ -12,6 +12,7 @@ from datetime import datetime
 
 import github
 from codebergapi import CodebergAPI
+from requests.exceptions import ConnectionError
 
 
 def scan_codeberg(db: dict):
@@ -210,8 +211,12 @@ def main():
         if e.errno != errno.ENOENT:
             raise
 
-    queue = scan_codeberg(db)
-    queue.extend(scan_github(db, len(queue)))
+    queue = []
+    for func in (scan_codeberg, scan_github):
+        try:
+            queue.extend(func(db, len(queue)))
+        except ConnectionError:
+            pass
 
     with open(PULL_REQUEST_DB + ".tmp", "wb") as f:
         pickle.dump(db, f)
